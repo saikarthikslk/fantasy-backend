@@ -1,0 +1,39 @@
+CREATE TABLE player_stats (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    playerid VARCHAR(100),
+    matchid INTEGER,
+
+    totalpoints DOUBLE PRECISION DEFAULT 0.0,
+
+    score INTEGER DEFAULT 0,
+
+    -- batsman
+    runs INTEGER DEFAULT 0,
+    ballplayed INTEGER DEFAULT 0,
+    fours INTEGER DEFAULT 0,
+    sixes INTEGER DEFAULT 0,
+    strikerate DOUBLE PRECISION DEFAULT 0.0,
+
+    -- bowler
+    wickets INTEGER DEFAULT 0,
+    ballsbowled INTEGER DEFAULT 0,
+    scoregiven INTEGER DEFAULT 0,
+    maidens INTEGER DEFAULT 0,
+    eco DOUBLE PRECISION DEFAULT 0.0,
+    wides INTEGER DEFAULT 0,
+    nb INTEGER DEFAULT 0,
+
+    -- fielding / dismissal
+    catches INTEGER DEFAULT 0,
+    runouts INTEGER DEFAULT 0,
+    stumpouts INTEGER DEFAULT 0,
+    stumping INTEGER DEFAULT 0,
+    bowled INTEGER DEFAULT 0,
+    lbw INTEGER DEFAULT 0,
+    catchouts INTEGER DEFAULT 0,
+
+    out BOOLEAN DEFAULT FALSE,
+    type VARCHAR(50),
+    dismissal TEXT
+);

@@ -54,8 +54,8 @@ public class OAuth2AuthenticationSuccessHandler
         // Option A — return JWT in response body (for REST/SPA)
         response.setContentType("application/json");
         response.getWriter().write("{\"token\": \"" + token + "\"}");
-
-        response.sendRedirect("http://localhost:9200/#/matches?token="+token);
+        response.sendRedirect("https://fantasy-frontend-loqr.vercel.app/#/matches?token="+token);
+//        response.sendRedirect("https://fantasy-frontend-loqr.vercel.app/#/matches?token="+token);
         // Option B — redirect to frontend with token in URL (for web apps)
     }
 

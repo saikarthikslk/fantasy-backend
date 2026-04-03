@@ -12,4 +12,7 @@ import java.util.List;
 public class DreamTeam {
     private Integer matchid;
     private List<SelectedPlayer> properties;
+    private Integer captainPlayerId ;
+    private Integer viceCaptainPlayerId;
+
 }

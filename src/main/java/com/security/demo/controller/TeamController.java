@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/teams")
-@CrossOrigin(origins = "*")
 public class TeamController {
 
     @Autowired

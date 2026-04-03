@@ -17,4 +17,6 @@ public class User {
     public String email;
     public String name;
     private Timestamp created_at;
+    private String gamename;
+    private byte[] profielpic;
 }

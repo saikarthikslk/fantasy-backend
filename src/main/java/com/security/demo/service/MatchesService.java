@@ -25,8 +25,14 @@ public class MatchesService {
     @Autowired
     CustomTeamrepo customTeamrepo;
 
+
+
     public List<Match> fetchMatches(){
         return matchrepo.findAll().stream().map(this::toMatchInfo).toList();
+    }
+    public List<MatchInfoEntity> fetchliveorcompleted(){
+        List<String> strings = List.of("Completed");
+      return matchrepo.fetchmatchescompletedorlive(strings);
     }
     public MatchSelection fetchPlayers(Integer id, String email){
         Optional<MatchInfoEntity> match = matchrepo.findById(id);
@@ -38,7 +44,7 @@ public class MatchesService {
             ids.add(match.get().getTeam2().getTeamId());
             try {
                 CompletableFuture<List<PlayerEntity>> playerfuture = CompletableFuture.supplyAsync(()->playerRepo.getPlayers(ids));
-                CompletableFuture<CustomTeamEntity> teamCompletableFuture = CompletableFuture.supplyAsync(()->customTeamrepo.findByEmail(email));
+                CompletableFuture<CustomTeamEntity> teamCompletableFuture = CompletableFuture.supplyAsync(()->customTeamrepo.findbymatchidandemail(id,email));
                 CompletableFuture<?> all = CompletableFuture.allOf(playerfuture,teamCompletableFuture);
                 all.join();
                 matchSelection.setDreamTeam(teamCompletableFuture.get());

@@ -1,14 +1,20 @@
 package com.security.demo;
 
+import com.security.demo.controller.NotificationController;
 import com.security.demo.service.HttpCaller;
+import com.security.demo.service.LoadGameService;
+import com.security.demo.service.MatchLoader;
+import com.security.demo.service.MatchesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @SpringBootApplication
 @EnableScheduling
@@ -22,9 +28,48 @@ public class DemoApplication {
 
 	@Autowired
 	HttpCaller httpCaller;
-	@Scheduled(fixedRate = 1000000)
+	@Autowired
+	LoadGameService gameService;
+
+	@Autowired
+	MatchLoader matchLoader;
+
+	private static List<CompletableFuture> futures = new ArrayList<>();
+	@Scheduled(fixedRate = 18000000)
 	public void run() throws IOException, InterruptedException {
-		httpCaller.fetchdata("139489/1/1772979600000");
+//		httpCaller.fetchsavematches();
+//		httpCaller.loadTeamData();
+//		httpCaller.loadSquaddata();
+
+
 	}
+
+	//fetch daily matches
+	@Scheduled(fixedRate = 86400000)
+	public void run1() throws IOException, InterruptedException {
+		httpCaller.fetchsavematches();
+
+	}
+	//run every 30mins
+	@Scheduled(fixedRate = 1800000)
+	public void run2() throws IOException, InterruptedException {
+		matchLoader.fetchmatchsabouttostart();
+
+	}
+
+//	run every 30mins
+	@Scheduled(fixedRate = 1800000)
+	public void rungame() throws IOException, InterruptedException {
+		matchLoader.runmatch();
+	}
+
+	@Autowired
+	NotificationController notificationController;
+
+
+
+
+
+
 
 }

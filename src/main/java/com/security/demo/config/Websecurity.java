@@ -29,6 +29,12 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.session.DisableEncodeUrlFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.List;
 
 @EnableWebSecurity
 @Configuration
@@ -39,12 +45,23 @@ public class Websecurity {
     JwtFilter jwt;
     @Autowired
     OAuth2AuthenticationSuccessHandler successHandler;
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("*")); // 👈 your frontend URL
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
         security.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
-                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.disable())
-                .authorizeHttpRequests(request -> request.requestMatchers("/login/**","/oauth/**","/redirect/**").permitAll()
+                .cors(cors ->cors.configurationSource( corsConfigurationSource()))
+                .authorizeHttpRequests(request -> request.requestMatchers("/login/**","/oauth/**","/redirect/**","/api/stream/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

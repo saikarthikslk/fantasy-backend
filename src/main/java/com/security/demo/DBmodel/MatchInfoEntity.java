@@ -1,10 +1,15 @@
 package com.security.demo.DBmodel;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
 @Entity
 @Table(name = "match_info")
+@Getter
+@Setter
 public class MatchInfoEntity implements Serializable {
 
     @Id
@@ -35,6 +40,9 @@ public class MatchInfoEntity implements Serializable {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "isloaded")
+    private Integer isloaded = 0 ;
+
     // FK → team.team_id (team1)
     @ManyToOne
     @JoinColumn(name = "team1_id", referencedColumnName = "team_id")
@@ -49,6 +57,8 @@ public class MatchInfoEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "venue_id", referencedColumnName = "id")
     private VenueEntity venueInfo;
+
+
 
     public MatchInfoEntity() {}
 

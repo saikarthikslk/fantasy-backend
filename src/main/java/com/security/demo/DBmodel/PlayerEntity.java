@@ -34,6 +34,8 @@ public class PlayerEntity implements Serializable {
     @Column(name = "type")
     private String type;
 
+    private Integer points;
+
     @ManyToOne
     @JoinColumn(name = "team_id", referencedColumnName = "team_id")
     private TeamEntity team;
