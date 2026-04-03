@@ -30,7 +30,7 @@ public class MatchLoader {
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+         System.out.println("exeception occured");
         }
         System.out.println("running");
         List<MatchInfoEntity> matchInfoEntities =  matchrepo.findAll().stream().filter(x->{
