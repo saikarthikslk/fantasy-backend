@@ -486,7 +486,7 @@ public class LoadGameService {
                     matchState.setTimestamp(System.currentTimeMillis());
                     matchState.setTosswonby(response.get("teamid").toString());
                     matchState.setMatchstatus(response.get("status").toString());
-                    matchInfoEntity.setState("Live");
+            
                     if(response.get("status").toString().toLowerCase().contains("bowl")){
                         matchState.setTeam2(matchState.getTosswonby());
                         if(matchInfoEntity.getTeam1().getTeamId() == Integer.parseInt(matchState.getTosswonby())){
@@ -511,7 +511,7 @@ public class LoadGameService {
             }
         }
         matchStaterepo.save(matchState);
-        matchrepo.save(matchInfoEntity);
+        
         notificationController.sendEvent("refresh",matchid);
         System.out.println("Toss Won by " + matchState.getTosswonby() );
         Integer[] innings = {-1};
