@@ -857,7 +857,7 @@ public class LoadGameService {
                     }
 
                     result.put("extras", extras);
-                    System.out.println(results);
+                    System.out.println(result);
                     if(id1 == 1){
                         r1 = result;
                     }else {
