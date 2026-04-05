@@ -76,7 +76,7 @@ public class MatchLoader {
        List<MatchInfoEntity> matchInfoEntities =  matchrepo.findAll().stream().filter(x->{
 
            Long start = (x.getStartDate() - System.currentTimeMillis()   )/1000 ;
-           if( start <= 7200) {
+           if( start >0 && start <= 5400) {
               return true;
            }
            return false;
