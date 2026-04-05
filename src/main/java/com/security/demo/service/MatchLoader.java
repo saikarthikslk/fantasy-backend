@@ -76,7 +76,7 @@ public class MatchLoader {
        List<MatchInfoEntity> matchInfoEntities =  matchrepo.findAll().stream().filter(x->{
 
            Long start = (x.getStartDate() - System.currentTimeMillis()   )/1000 ;
-           if(start > 0 && start <= 7200) {
+           if( start <= 7200) {
               return true;
            }
            return false;
@@ -86,7 +86,7 @@ public class MatchLoader {
 
        for (MatchInfoEntity matchInfoEntity : matchInfoEntities) {
            if(matchInfoEntity.getIsloaded() ==  null) {
-               matchInfoEntity.setIsloaded(0);
+               matchInfoEntity.setIsloaded(1);
            }
            if( matchInfoEntity.getIsloaded() <=3) {
                httpCaller.loadSquaddata(matchInfoEntity.getMatchId());

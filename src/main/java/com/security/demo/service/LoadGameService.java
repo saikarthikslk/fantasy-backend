@@ -41,7 +41,8 @@ public class LoadGameService {
     private Matchrepo matchrepo;
     @Autowired
     private MatchStaterepo matchStaterepo;
-    private static      JaroWinklerSimilarity jw = new JaroWinklerSimilarity();;
+    private static      JaroWinklerSimilarity jw = new JaroWinklerSimilarity();
+
     private ObjectMapper mapper = new ObjectMapper();
 
     public PlayerEntity getplayer(String name , Map<String,PlayerEntity> playerEntityMap) {
@@ -510,8 +511,21 @@ public class LoadGameService {
 
             }
         }
+        notificationController.sendEvent("refresh",matchid);
         matchStaterepo.save(matchState);
-        
+        System.out.println("Checking for Squad Data");
+        while (true) {
+            if(matchesService.saveplayers(matchid, true)){
+                break;
+            };
+            sleep(10);
+        }
+        System.out.println("Announced   Squad Data");
+
+        matchState.setIsannounced(true);
+        matchInfoEntity.setIsannounced(true);
+        matchStaterepo.save(matchState);
+        matchrepo.save(matchInfoEntity);
         notificationController.sendEvent("refresh",matchid);
         System.out.println("Toss Won by " + matchState.getTosswonby() );
         Integer[] innings = {-1};
@@ -620,7 +634,9 @@ public class LoadGameService {
 
                         PlayerEntity playerEntity = getplayer(name, playernamemap);
                         PlayerPoints playerPoints = playerPointsMap.get(playerEntity.getId());
-
+                        if(playerPoints == null) {
+                            int y  =1 ;
+                        }
                         playerPoints.setFours(fours);
                         playerPoints.setSixes(sixes);
                         playerPoints.setBallplayed(balls);
@@ -915,6 +931,7 @@ public class LoadGameService {
             }
         }
         System.out.println("Match completed");
+        matchesService.saveplayers(matchid,false);
 
 
     }

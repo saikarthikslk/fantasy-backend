@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -28,6 +29,11 @@ public class MatchesService {
 
     @Autowired
     CustomTeamrepo customTeamrepo;
+    @Autowired
+    HttpCaller caller;
+
+    private static  List<String> list = List.of("bench","substitutes","playing XI");
+
 
 
 
@@ -39,87 +45,95 @@ public class MatchesService {
       return matchrepo.fetchmatchescompletedorlive(strings);
     }
     public SmartTeam getbestplayers(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap){
-        SmartTeam smartTeam = new SmartTeam();
-        smartTeam.setPlayers(new ArrayList<>());
-        Map<String, Double> pt1 = pointdtos.stream().collect(Collectors.toMap(Pointdto::getPlayerid, Pointdto::getPoints,  (a, b)->a ));
-        List<PlayerEntity> playerEntities = playerEntityMap.stream().filter(x->pt1.containsKey(x.getId())).collect(Collectors.toList());
-        playerEntities.forEach(x->{
-            if(pt1.containsKey(x.getId())) {
-                x.setTotalpoints(pt1.get(x.getId()));
-            }
-        });
-        playerEntities.sort((a,b)-> {
-            Double p1 = 0.0;
-            Double p2 = 0.0;
-            if (pt1.containsKey(a.getId())) {
-                p1 = pt1.get(a.getId());
-            }
+        if(pointdtos.size() == 0 ){
+            return null;
+        }
+        try {
 
-            if (pt1.containsKey(b.getId())) {
-                p2 = pt1.get(b.getId());
-            }
+            SmartTeam smartTeam = new SmartTeam();
+            smartTeam.setPlayers(new ArrayList<>());
+            Map<String, Double> pt1 = pointdtos.stream().collect(Collectors.toMap(Pointdto::getPlayerid, Pointdto::getPoints, (a, b) -> a));
+            List<PlayerEntity> playerEntities = playerEntityMap.stream().filter(x -> pt1.containsKey(x.getId())).collect(Collectors.toList());
+            playerEntities.forEach(x -> {
+                if (pt1.containsKey(x.getId())) {
+                    x.setTotalpoints(pt1.get(x.getId()));
+                }
+            });
+            playerEntities.sort((a, b) -> {
+                Double p1 = 0.0;
+                Double p2 = 0.0;
+                if (pt1.containsKey(a.getId())) {
+                    p1 = pt1.get(a.getId());
+                }
 
-            if(p1 > p2 ){
-                return  -1;
-            } else if (p1.equals(p2)) {
-                return 0;
+                if (pt1.containsKey(b.getId())) {
+                    p2 = pt1.get(b.getId());
+                }
 
-            }
-            else {
-                return 1;
-            }
-        });
-        Map<Integer,List<PlayerEntity>> e = new HashMap<>();
-        Map<String,Integer> e1 =new HashMap<>();
+                if (p1 > p2) {
+                    return -1;
+                } else if (p1.equals(p2)) {
+                    return 0;
 
-
-        List<PlayerEntity > selected = new ArrayList<>();
-        playerEntities.forEach(x->{
-            if(selected.size() == 11) {
-                return;
-            }
-           int team = x.getTeam().getTeamId();
-           if( !e.containsKey(team)) {
-               e.put(team,new ArrayList<>());
-
-           }
+                } else {
+                    return 1;
+                }
+            });
+            Map<Integer, List<PlayerEntity>> e = new HashMap<>();
+            Map<String, Integer> e1 = new HashMap<>();
 
 
+            List<PlayerEntity> selected = new ArrayList<>();
+            playerEntities.forEach(x -> {
+                if (selected.size() == 11) {
+                    return;
+                }
+                int team = x.getTeam().getTeamId();
+                if (!e.containsKey(team)) {
+                    e.put(team, new ArrayList<>());
 
-           if(e.get(team).size() <= 7) {
+                }
 
-               if(selected.size() <= 8 ) {
-                   e1.put(x.getType(),1);
-                   selected.add(x);
-                   e.get(team).add(x);
 
-               }else  {
+                if (e.get(team).size() <= 7) {
 
-                   int typeleft = 4 - e.size();
-                   if(typeleft == 0) {
-                       e1.put(x.getType(),1);
-                       selected.add(x);
-                       e.get(team).add(x);
-                   }else  {
-                       if(typeleft == 11 - selected.size() && !e1.containsKey(x.getType())) {
-                           selected.add(x);
-                           e1.put(x.getType() , 1);
-                           e.get(team).add(x);
-                       }else  {
-                           selected.add(x);
-                           e1.put(x.getType() , 1);
-                           e.get(team).add(x);
-                       }
+                    if (selected.size() <= 8) {
+                        e1.put(x.getType(), 1);
+                        selected.add(x);
+                        e.get(team).add(x);
 
-                   }
-               }
+                    } else {
 
-           }
-        });
-        smartTeam.setPlayers(selected);
-        smartTeam.setCaptain(selected.get(0).getId());
-        smartTeam.setVicecaptain(selected.get(1).getId());
-        return smartTeam;
+                        int typeleft = 4 - e.size();
+                        if (typeleft == 0) {
+                            e1.put(x.getType(), 1);
+                            selected.add(x);
+                            e.get(team).add(x);
+                        } else {
+                            if (typeleft == 11 - selected.size() && !e1.containsKey(x.getType())) {
+                                selected.add(x);
+                                e1.put(x.getType(), 1);
+                                e.get(team).add(x);
+                            } else {
+                                selected.add(x);
+                                e1.put(x.getType(), 1);
+                                e.get(team).add(x);
+                            }
+
+                        }
+                    }
+
+                }
+            });
+            smartTeam.setPlayers(selected);
+            smartTeam.setCaptain(selected.get(0).getId());
+            smartTeam.setVicecaptain(selected.get(1).getId());
+            return smartTeam;
+        } catch (Exception e) {
+            System.out.println(e.getMessage() );
+        }
+        return null;
+
 
 
     }
@@ -142,15 +156,64 @@ public class MatchesService {
                 matchSelection.setPlayers(playerfuture.get());
                 matchSelection.setSmartTeam(getbestplayers(pt.get(),matchSelection.getPlayers()));
 
+                matchSelection.setIsannounced(match.get().getIsannounced());
+
 
 
             }catch (Exception e) {
-                System.out.println("Failed to retrive match data");
+                System.out.println("Failed to retrive match data " + e.getMessage() + "  " +match.get().getMatchId());
             }
 
         }
         return matchSelection;
     }
+    public boolean saveplayers(Integer id ,Boolean islive){
+        Optional<MatchInfoEntity> match = matchrepo.findById(id);
+        if(match.isPresent()) {
+            List<Integer> ids = new ArrayList<>();
+            ids.add(match.get().getTeam1().getTeamId());
+            ids.add(match.get().getTeam2().getTeamId());
+            try {
+                CompletableFuture<List<PlayerEntity>> playerfuture = CompletableFuture.supplyAsync(()->playerRepo.getPlayers(ids));
+                CompletableFuture<Map<String,List<String> > > squads = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return caller.getplayers(match.get().getMatchId());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                CompletableFuture<?> all = CompletableFuture.allOf(playerfuture, squads);
+                all.join();
+                Map<String ,List<String>> sq1 = squads.get();
+                if(sq1.size() > 0 ){
+                    List<PlayerEntity> playerEntities = playerfuture.get();
+                    playerEntities.forEach(x -> {
+                        for (String  key  : sq1.keySet())  {
+                            if(list.contains(key) && sq1.get(key).contains(x.getId())) {
+                                if(islive) {
+                                    x.setCategory(key);
+                                }else  {
+                                    x.setPrevcategory(key);
+                                }
+                            }
+
+                        }
+                    });
+                    playerRepo.saveAll(playerEntities);
+                    return true;
+
+                }
+
+
+            }catch (Exception e) {
+                System.out.println("Failed to save squad data");
+            }
+
+
+        }
+        return false;
+    }
+
     private Match toMatchInfo(MatchInfoEntity e) {
         Team team1 = new Team();
         team1.setTeamId(e.getTeam1().getTeamId());

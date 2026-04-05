@@ -35,4 +35,6 @@ public class MatchState {
 
     private String team2;
 
+    private Boolean isannounced = false;
+
 }

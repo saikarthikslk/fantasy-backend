@@ -58,6 +58,7 @@ public class MatchInfoEntity implements Serializable {
     @JoinColumn(name = "venue_id", referencedColumnName = "id")
     private VenueEntity venueInfo;
 
+    private Boolean isannounced = false;
 
 
     public MatchInfoEntity() {}

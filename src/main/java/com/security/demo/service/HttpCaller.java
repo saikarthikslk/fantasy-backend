@@ -11,6 +11,10 @@ import com.security.demo.repo.Matchrepo;
 import com.security.demo.repo.PlayerRepo;
 import com.security.demo.repo.TeamRepo;
 import com.security.demo.repo.Venuerepo;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -514,6 +518,53 @@ public class HttpCaller {
             }
         });
         playerRepo.saveAll(playerEntitiestobesaved);
+
+    }
+
+    public Map<String, List<String>> getplayers(Integer matchid) throws IOException {
+        String url = "https://www.cricbuzz.com/cricket-match-squads/"+matchid;
+        Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .get();
+        Elements sections = doc.select("div.pb-5");
+        Map<String ,List<String>> pids = new HashMap<>();
+        for (Element section : sections) {
+
+            // Step 1: Find h1 with exact class combo
+            Element header = section.selectFirst(
+                    "> h1.capitalize.p-2.font-bold.text-lg.text-center.text-cbItmBkgDark.bg-cbBorderGrey.wb\\:bg-white"
+            );
+
+            if (header == null) continue;
+
+            String sectionName = header.text().trim();
+            if (!pids.containsKey(sectionName)) {
+                pids.put(sectionName,new ArrayList<>());
+            }
+            // Step 2: Teams
+            Elements teams = section.select("> div.w-full.flex > div.w-1\\/2");
+
+            if (!teams.isEmpty()) {
+                for (int i = 0; i < teams.size(); i++) {
+
+                    Elements players = teams.get(i).select("a[href^=/profiles/]");
+
+                    for (Element player : players) {
+                        String name = player.selectFirst("span").text();
+                        List<String> strings =  Arrays.stream(player.attr("href" ).split("/")).filter(x->!x.isEmpty()).toList();
+                        if(strings.size() >0 ) {
+                            String pid = strings.get(1);
+                            pids.get(sectionName).add(pid);
+
+                        }
+
+                    }
+                }
+            }
+        }
+         return pids;
+
+
 
     }
 
