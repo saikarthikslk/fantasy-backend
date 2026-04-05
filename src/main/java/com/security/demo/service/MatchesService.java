@@ -3,17 +3,19 @@ package com.security.demo.service;
 import com.security.demo.DBmodel.CustomTeamEntity;
 import com.security.demo.DBmodel.MatchInfoEntity;
 import com.security.demo.DBmodel.PlayerEntity;
+import com.security.demo.DBmodel.PlayerPoints;
 import com.security.demo.model.*;
 import com.security.demo.repo.CustomTeamrepo;
 import com.security.demo.repo.Matchrepo;
+import com.security.demo.repo.PlayerPointsrepo;
 import com.security.demo.repo.PlayerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class MatchesService {
@@ -21,6 +23,8 @@ public class MatchesService {
     Matchrepo matchrepo;
     @Autowired
     PlayerRepo playerRepo;
+    @Autowired
+    PlayerPointsrepo playerPointsrepo;
 
     @Autowired
     CustomTeamrepo customTeamrepo;
@@ -34,9 +38,94 @@ public class MatchesService {
         List<String> strings = List.of("Completed");
       return matchrepo.fetchmatchescompletedorlive(strings);
     }
+    public SmartTeam getbestplayers(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap){
+        SmartTeam smartTeam = new SmartTeam();
+        smartTeam.setPlayers(new ArrayList<>());
+        Map<String, Double> pt1 = pointdtos.stream().collect(Collectors.toMap(Pointdto::getPlayerid, Pointdto::getPoints,  (a, b)->a ));
+        List<PlayerEntity> playerEntities = playerEntityMap.stream().filter(x->pt1.containsKey(x.getId())).collect(Collectors.toList());
+        playerEntities.forEach(x->{
+            if(pt1.containsKey(x.getId())) {
+                x.setTotalpoints(pt1.get(x.getId()));
+            }
+        });
+        playerEntities.sort((a,b)-> {
+            Double p1 = 0.0;
+            Double p2 = 0.0;
+            if (pt1.containsKey(a.getId())) {
+                p1 = pt1.get(a.getId());
+            }
+
+            if (pt1.containsKey(b.getId())) {
+                p2 = pt1.get(b.getId());
+            }
+
+            if(p1 > p2 ){
+                return  -1;
+            } else if (p1.equals(p2)) {
+                return 0;
+
+            }
+            else {
+                return 1;
+            }
+        });
+        Map<Integer,List<PlayerEntity>> e = new HashMap<>();
+        Map<String,Integer> e1 =new HashMap<>();
+
+
+        List<PlayerEntity > selected = new ArrayList<>();
+        playerEntities.forEach(x->{
+            if(selected.size() == 11) {
+                return;
+            }
+           int team = x.getTeam().getTeamId();
+           if( !e.containsKey(team)) {
+               e.put(team,new ArrayList<>());
+
+           }
+
+
+
+           if(e.get(team).size() <= 7) {
+
+               if(selected.size() <= 8 ) {
+                   e1.put(x.getType(),1);
+                   selected.add(x);
+                   e.get(team).add(x);
+
+               }else  {
+
+                   int typeleft = 4 - e.size();
+                   if(typeleft == 0) {
+                       e1.put(x.getType(),1);
+                       selected.add(x);
+                       e.get(team).add(x);
+                   }else  {
+                       if(typeleft == 11 - selected.size() && !e1.containsKey(x.getType())) {
+                           selected.add(x);
+                           e1.put(x.getType() , 1);
+                           e.get(team).add(x);
+                       }else  {
+                           selected.add(x);
+                           e1.put(x.getType() , 1);
+                           e.get(team).add(x);
+                       }
+
+                   }
+               }
+
+           }
+        });
+        smartTeam.setPlayers(selected);
+        smartTeam.setCaptain(selected.get(0).getId());
+        smartTeam.setVicecaptain(selected.get(1).getId());
+        return smartTeam;
+
+
+    }
     public MatchSelection fetchPlayers(Integer id, String email){
         Optional<MatchInfoEntity> match = matchrepo.findById(id);
-       MatchSelection matchSelection = new MatchSelection();
+        MatchSelection matchSelection = new MatchSelection();
        matchSelection.setPlayers(new ArrayList<>());
         if(match.isPresent()) {
             List<Integer> ids = new ArrayList<>();
@@ -44,11 +133,17 @@ public class MatchesService {
             ids.add(match.get().getTeam2().getTeamId());
             try {
                 CompletableFuture<List<PlayerEntity>> playerfuture = CompletableFuture.supplyAsync(()->playerRepo.getPlayers(ids));
+                CompletableFuture<List<Pointdto>> pt = CompletableFuture.supplyAsync(() -> playerPointsrepo.getpoints());
                 CompletableFuture<CustomTeamEntity> teamCompletableFuture = CompletableFuture.supplyAsync(()->customTeamrepo.findbymatchidandemail(id,email));
-                CompletableFuture<?> all = CompletableFuture.allOf(playerfuture,teamCompletableFuture);
+                CompletableFuture<?> all = CompletableFuture.allOf(playerfuture,teamCompletableFuture ,pt);
                 all.join();
+
                 matchSelection.setDreamTeam(teamCompletableFuture.get());
                 matchSelection.setPlayers(playerfuture.get());
+                matchSelection.setSmartTeam(getbestplayers(pt.get(),matchSelection.getPlayers()));
+
+
+
             }catch (Exception e) {
                 System.out.println("Failed to retrive match data");
             }

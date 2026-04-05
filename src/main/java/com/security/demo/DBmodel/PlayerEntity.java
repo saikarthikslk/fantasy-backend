@@ -40,6 +40,10 @@ public class PlayerEntity implements Serializable {
     @JoinColumn(name = "team_id", referencedColumnName = "team_id")
     private TeamEntity team;
 
+
+    @Transient
+    private Double  totalpoints =  0.0;
+
     public PlayerEntity() {}
 
     public PlayerEntity(String id, String name, int imageId, String battingStyle, String bowlingStyle) {

@@ -34,7 +34,7 @@ public class UserService {
     public User fetchuser(String email){
         return userrepo.findByEmail(email);
     }
-    public User modifyUser(String email , UploadData data){
+    public User modifyUser(String email ,   UploadData data   ){
         User user =    userrepo.findByEmail(email);
         if(user == null) {
             return null;
@@ -44,6 +44,11 @@ public class UserService {
         }
         if(data.getName() != null) {
             user.setGamename(data.getName());
+        }
+        if(data.getAutoteam() != null) {
+            user.setAutoteam(
+                    data.getAutoteam()
+            );
         }
 
         return userrepo.save(user);

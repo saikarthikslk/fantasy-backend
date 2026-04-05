@@ -18,5 +18,6 @@ public class User {
     public String name;
     private Timestamp created_at;
     private String gamename;
+    private Boolean autoteam;
     private byte[] profielpic;
 }

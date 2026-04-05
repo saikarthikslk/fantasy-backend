@@ -466,7 +466,7 @@ public class HttpCaller {
                                                 }{
                                                     entity.setType("BATSMEN");
                                                 }
-
+//                                                entity.setPlayingtype(p1.getCategory());
                                                 entity.setTeam(teams.get(p2.getTeamname()));
                                                 playerEntitiestobesaved.add(entity);
 

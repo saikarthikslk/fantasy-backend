@@ -15,4 +15,6 @@ public class UploadData
 
     private String name ;
     private byte[] image;
+
+    private Boolean autoteam;
 }
