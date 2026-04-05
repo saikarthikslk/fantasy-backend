@@ -249,4 +249,12 @@ public class MatchesService {
 
         return info;
     }
+
+    public boolean syncdata(){
+        this.fetchliveorcompleted().forEach(x->{
+            this.saveplayers(x.getMatchId(),false);
+        });
+        return true;
+    }
+
 }

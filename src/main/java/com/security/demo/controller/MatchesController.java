@@ -33,5 +33,9 @@ public class MatchesController {
         return matchesService.fetchPlayers(matchid,user.getUsername());
 
     }
+    @GetMapping("/sync")
+    public boolean fetchplayers( @AuthenticationPrincipal User user){
+        return matchesService.syncdata();
 
+    }
 }
