@@ -15,4 +15,5 @@ public class MatchSelection {
     private List<PlayerEntity> players;
     private CustomTeamEntity dreamTeam;
     private SmartTeam smartTeam;
+    private boolean isannounced = false;
 }
