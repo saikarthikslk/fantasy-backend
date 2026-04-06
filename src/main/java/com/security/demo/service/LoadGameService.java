@@ -1,17 +1,15 @@
 package com.security.demo.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.security.demo.DBmodel.MatchInfoEntity;
-import com.security.demo.DBmodel.PlayerEntity;
-import com.security.demo.DBmodel.PlayerPoints;
+import com.security.demo.DBmodel.*;
 import com.security.demo.controller.NotificationController;
 import com.security.demo.model.MatchSelection;
-import com.security.demo.DBmodel.MatchState;
 import com.security.demo.model.Matchinfo;
-import com.security.demo.repo.MatchStaterepo;
-import com.security.demo.repo.Matchrepo;
-import com.security.demo.repo.PlayerPointsrepo;
+import com.security.demo.model.SmartTeam;
+import com.security.demo.repo.*;
+import org.apache.commons.text.CaseUtils;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,6 +20,8 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,6 +41,10 @@ public class LoadGameService {
     private Matchrepo matchrepo;
     @Autowired
     private MatchStaterepo matchStaterepo;
+    @Autowired
+    private CustomTeamrepo customTeamrepo;
+    @Autowired
+    private Userrepo userrepo;
     private static      JaroWinklerSimilarity jw = new JaroWinklerSimilarity();
 
     private ObjectMapper mapper = new ObjectMapper();
@@ -466,6 +470,59 @@ public class LoadGameService {
                 .matcher(text);
         return m.find() ? Integer.parseInt(m.group(1)) : 0;
     }
+    public String mapPlayerType(String label) {
+        switch (label) {
+            case "ALL ROUNDER":   return "AR";
+            case "WICKET KEEPER": return "WK";
+            case "BOWLER":        return "BOWL";
+            case "BATSMEN":       return "BAT";
+            default:              return label; // fallback
+        }
+    }
+    public String autoload(Integer matchid) throws JsonProcessingException {
+
+        String team []= {""};
+       List<CustomTeamEntity> entities = customTeamrepo.findbymatchid(matchid);
+       Map<String,CustomTeamEntity> customTeamEntityMap = entities.stream().collect(Collectors.toMap(CustomTeamEntity::getEmail, x->x,(x, y)->x));
+       List<User> users = userrepo.findAll();
+       List<User> usersWhoNeedTeam = users.stream().filter(x->!customTeamEntityMap.containsKey(x.getEmail())).toList();
+       if(usersWhoNeedTeam .size()  >0 ) {
+           SmartTeam smartTeam = matchesService.fetchPlayers(matchid,"").getSmartTeam();
+           if(smartTeam != null) {
+               Map<String,Object> map = new HashMap<>();
+               map.put("matchid", matchid);
+               map.put("captainPlayerId",smartTeam.getCaptain());
+               map.put("viceCaptainPlayerId",smartTeam.getVicecaptain());
+               List<Map<String,Object>> maps = new ArrayList<>();
+               smartTeam.getPlayers().forEach(x->{
+                   Map<String,Object> pp = new HashMap<>();
+
+                   pp.put("playerid", x.getId());
+
+                   pp.put("type",mapPlayerType(x.getType()));
+                   maps.add(pp);
+               });
+               map.put("properties",maps);
+               team[0] = mapper.writeValueAsString(map);
+
+           }
+           if(team[0]!=null) {
+               List<CustomTeamEntity > tobesaved = new ArrayList<>();
+               usersWhoNeedTeam.forEach((u) -> {
+                   CustomTeamEntity entity = new CustomTeamEntity();
+                   entity.setMatch_id(matchid);
+                   entity.setCreated_at(Timestamp.from(Instant.now()));
+                   entity.setTeam(team[0]);
+                   entity.setEmail(u.getEmail());
+                   tobesaved.add(entity);
+               });
+               customTeamrepo.saveAll(tobesaved);
+           }
+    }
+       return team[0];
+
+
+    }
     public void pullscorecard(Integer matchid) throws IOException, InterruptedException {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
 
@@ -545,7 +602,7 @@ public class LoadGameService {
         Map<String, PlayerEntity> playernamemap = new HashMap<>();
         Map<String, PlayerEntity> playeridmap = new HashMap<>();
 
-
+        Boolean autoteam = true;
         List<PlayerPoints> points = playerPointsrepo.getpointsbymatchid(matchid);
         boolean isp[] ={false};
         matchState.setTimestamp(System.currentTimeMillis());
@@ -891,6 +948,10 @@ public class LoadGameService {
                     }
                     if(!Objects.equals(matchInfoEntity.getState(), "Live")) {
                         matchInfoEntity.setState("Live");
+                        if(autoteam) {
+                            autoload(matchid);
+                            autoteam = false;
+                        }
                         matchrepo.save(matchInfoEntity);
                     }
                 } else  {
