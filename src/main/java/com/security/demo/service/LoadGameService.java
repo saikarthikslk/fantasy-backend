@@ -1000,7 +1000,7 @@ public class LoadGameService {
                         }
                     }
                     change = 0;
-//                    sleep(30);
+                    sleep(30);
 
                 }
                 if(!ikey.equals(i1+":"+i2)) {
@@ -1022,7 +1022,7 @@ public class LoadGameService {
                     verify = verify + 1;
                     sleep(2);
                 }else {
-//                    sleep(30);
+                    sleep(30);
                 }
             } catch (IOException e) {
                 System.err.println("Error fetching the page: " + e.getMessage());
