@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -24,6 +26,8 @@ public class Match{
     private Team team1;
     private Team team2;
     private Venue venueInfo;
+    private String playerwon;
+    private Double points;
 
     public Match() {}
 

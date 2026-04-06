@@ -1,5 +1,6 @@
 package com.security.demo.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.security.demo.DBmodel.CustomTeamEntity;
 import com.security.demo.DBmodel.MatchInfoEntity;
 import com.security.demo.DBmodel.PlayerEntity;
@@ -9,6 +10,8 @@ import com.security.demo.repo.CustomTeamrepo;
 import com.security.demo.repo.Matchrepo;
 import com.security.demo.repo.PlayerPointsrepo;
 import com.security.demo.repo.PlayerRepo;
+import org.apache.commons.lang3.StringUtils;
+import org.jsoup.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
@@ -32,13 +35,34 @@ public class MatchesService {
     @Autowired
     HttpCaller caller;
 
+
+    @Autowired
+    LeaderBoardService service;
+
     private static  List<String> list = List.of("bench","substitutes","playing XI");
 
 
 
 
     public List<Match> fetchMatches(){
-        return matchrepo.findAll().stream().map(this::toMatchInfo).toList();
+        List<Match> matches =  matchrepo.findAll().stream().map(this::toMatchInfo).toList();
+        matches.forEach(m ->{
+            if(m.getState().equals("Completed")) {
+                try {
+                    List<TeamPoints > points =  service.getmatches(m.getMatchId());
+                    if(points.size() > 0 ) {
+                        Double p = points.get(0).getTotalpoints();
+                       String players = StringUtils.join(points.stream().filter(x -> Objects.equals(x.getTotalpoints(), p)).map(TeamPoints::getName).toList() , ";");
+                        m.setPoints(p);
+                        m.setPlayerwon(players);
+                    }
+                } catch (JsonProcessingException e) {
+
+                }
+
+            }
+        });
+        return matches;
     }
     public List<MatchInfoEntity> fetchliveorcompleted(){
         List<String> strings = List.of("Completed");
