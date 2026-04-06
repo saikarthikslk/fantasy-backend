@@ -13,6 +13,7 @@ import com.security.demo.repo.PlayerRepo;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
@@ -35,9 +36,12 @@ public class MatchesService {
     @Autowired
     HttpCaller caller;
 
-
+    @Lazy
     @Autowired
     LeaderBoardService service;
+
+
+
 
     private static  List<String> list = List.of("bench","substitutes","playing XI");
 
