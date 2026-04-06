@@ -1,15 +1,9 @@
 package com.security.demo.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.security.demo.DBmodel.CustomTeamEntity;
-import com.security.demo.DBmodel.MatchInfoEntity;
-import com.security.demo.DBmodel.PlayerEntity;
-import com.security.demo.DBmodel.PlayerPoints;
+import com.security.demo.DBmodel.*;
 import com.security.demo.model.*;
-import com.security.demo.repo.CustomTeamrepo;
-import com.security.demo.repo.Matchrepo;
-import com.security.demo.repo.PlayerPointsrepo;
-import com.security.demo.repo.PlayerRepo;
+import com.security.demo.repo.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +33,8 @@ public class MatchesService {
     @Lazy
     @Autowired
     LeaderBoardService service;
+    @Autowired
+    MatchStaterepo matchStaterepo;
 
 
 
@@ -54,11 +50,15 @@ public class MatchesService {
             if(m.getState().equals("Completed")) {
                 try {
                     List<TeamPoints > points =  service.getmatches(m.getMatchId());
+                    MatchState state = matchStaterepo.getstate(m.getMatchId());
                     if(points.size() > 0 ) {
                         Double p = points.get(0).getTotalpoints();
                        String players = StringUtils.join(points.stream().filter(x -> Objects.equals(x.getTotalpoints(), p)).map(TeamPoints::getName).toList() , ";");
                         m.setPoints(p);
                         m.setPlayerwon(players);
+                    }
+                    if(state !=null ) {
+                        m.setTeamWon(state.getMatchstatus());
                     }
                 } catch (JsonProcessingException e) {
 

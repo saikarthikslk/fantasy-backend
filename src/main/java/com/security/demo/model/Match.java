@@ -21,6 +21,7 @@ public class Match{
     private long endDate;
     private String state;
     private String status;
+    private String  teamWon;
 
     // Child objects (fetched via matchId as FK in their tables)
     private Team team1;
