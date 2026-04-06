@@ -32,67 +32,80 @@ public class LeaderBoardService {
 
     @Autowired
     MatchStaterepo staterepo;
+
+    public static List<OverallPoints> points = new ArrayList<>();
+
+    public Map<Integer,List<TeamPoints>> scores = new HashMap<>();
+
     public List<TeamPoints> getmatches(Integer matchid) throws JsonProcessingException {
-       List<CustomTeamEntity> customTeam =  customTeamrepo.findbymatchid(matchid);
-       if(customTeam.isEmpty()) {
-           return  new ArrayList<>();
-       }
-       Map<String,PlayerPoints> pp = playerPointsrepo.getpointsbymatchid(matchid).stream().collect(Collectors.toMap(PlayerPoints::getPlayerid, x->x , (x, b)->x));
+        if(scores.containsKey(matchid)) {
+            return scores.get(matchid);
+        }
+        scores.put(matchid,getpoints(matchid));
+        return scores.get(matchid);
+    }
+    public List<TeamPoints> getpoints(Integer matchid) throws JsonProcessingException {
+        List<CustomTeamEntity> customTeam =  customTeamrepo.findbymatchid(matchid);
+        if(customTeam.isEmpty()) {
+            return  new ArrayList<>();
+        }
+        Map<String,PlayerPoints> pp = playerPointsrepo.getpointsbymatchid(matchid).stream().collect(Collectors.toMap(PlayerPoints::getPlayerid, x->x , (x, b)->x));
 
-       List<TeamPoints> teamPoints = new ArrayList<>();
-       for (CustomTeamEntity c1 : customTeam) {
-           User user = userrepo.findByEmail(c1.getEmail());
-           Map<String,PlayerEntity> PL = playerRepo.findAll().stream().collect(Collectors.toMap(PlayerEntity::getId, x->x , (x, b)->x));
-           Map<String,Object> team = mapper.readValue(c1.getTeam(),new TypeReference<Map<String, Object>>() {});
-           TeamPoints points = new TeamPoints();
-           points.setMatchid(matchid);
-           points.setName(user.getGamename());
-           points.setEmail(user.getEmail());
-           points.setCaptain(team.get("captainPlayerId").toString());
-           points.setVcaptain(team.get("viceCaptainPlayerId").toString());
-           List<Object> players = (List<Object>) team.get("properties");
-           Double totalpoints=  0.0;
-           List<Playerchosen> playerchosens = new ArrayList<>();
-           for (Object overall : players) {
-               Map<String,Object> player = (Map<String, Object>) overall;
-               String playerid = player.get("playerid").toString();
-               PlayerEntity playerEntity = PL.get(playerid);
+        List<TeamPoints> teamPoints = new ArrayList<>();
+        for (CustomTeamEntity c1 : customTeam) {
+            User user = userrepo.findByEmail(c1.getEmail());
+            Map<String,PlayerEntity> PL = playerRepo.findAll().stream().collect(Collectors.toMap(PlayerEntity::getId, x->x , (x, b)->x));
+            Map<String,Object> team = mapper.readValue(c1.getTeam(),new TypeReference<Map<String, Object>>() {});
+            TeamPoints points = new TeamPoints();
+            points.setMatchid(matchid);
+            points.setName(user.getGamename());
+            points.setEmail(user.getEmail());
+            points.setCaptain(team.get("captainPlayerId").toString());
+            points.setVcaptain(team.get("viceCaptainPlayerId").toString());
+            List<Object> players = (List<Object>) team.get("properties");
+            Double totalpoints=  0.0;
+            List<Playerchosen> playerchosens = new ArrayList<>();
+            for (Object overall : players) {
+                Map<String,Object> player = (Map<String, Object>) overall;
+                String playerid = player.get("playerid").toString();
+                PlayerEntity playerEntity = PL.get(playerid);
 
-               Playerchosen playerchosen = new Playerchosen();
-               playerchosen.setPlayerid(playerid);
-               playerchosen.setUrl(playerEntity.getImageId()+"");
-               double pt= pp.get(playerchosen.getPlayerid())== null?0: pp.get(playerchosen.getPlayerid()).getTotalpoints();
-               playerchosen.setTeam(playerEntity.getTeam().getTeamId()+"");
-               playerchosen.setType(playerEntity.getType());
-               playerchosen.setName(playerEntity.getName());
-               playerchosen.setPoints(pt);
+                Playerchosen playerchosen = new Playerchosen();
+                playerchosen.setPlayerid(playerid);
+                playerchosen.setUrl(playerEntity.getImageId()+"");
+                double pt= pp.get(playerchosen.getPlayerid())== null?0: pp.get(playerchosen.getPlayerid()).getTotalpoints();
+                playerchosen.setTeam(playerEntity.getTeam().getTeamId()+"");
+                playerchosen.setType(playerEntity.getType());
+                playerchosen.setName(playerEntity.getName());
+                playerchosen.setPoints(pt);
 
-               if(playerchosen.getPlayerid().equals(points.getCaptain())) {
-                   playerchosen.setPoints(pt*2);
-               } else if (playerchosen.getPlayerid().equals(points.getVcaptain())) {
-                   playerchosen.setPoints(pt*1.5);
+                if(playerchosen.getPlayerid().equals(points.getCaptain())) {
+                    playerchosen.setPoints(pt*2);
+                } else if (playerchosen.getPlayerid().equals(points.getVcaptain())) {
+                    playerchosen.setPoints(pt*1.5);
 
-               }
-               totalpoints = totalpoints+playerchosen.getPoints();
+                }
+                totalpoints = totalpoints+playerchosen.getPoints();
 
-               playerchosens.add(playerchosen);
+                playerchosens.add(playerchosen);
 
-           }
-           points.setTotalpoints(totalpoints);
-           points.setPlayerEntities(playerchosens);
-           points.setDid(c1.getId());
-           points.setImageurl(user.getProfielpic());
-           teamPoints.add(points);
+            }
+            points.setTotalpoints(totalpoints);
+            points.setPlayerEntities(playerchosens);
+            points.setDid(c1.getId());
+            points.setImageurl(user.getProfielpic());
+            teamPoints.add(points);
 
-       }
+        }
 
-       teamPoints.sort(Comparator.comparing(TeamPoints::getTotalpoints).reversed());
+        teamPoints.sort(Comparator.comparing(TeamPoints::getTotalpoints).reversed());
         IntStream.range(1,teamPoints.size()+1).forEach(i -> {
             teamPoints.get(i-1).setPosition(i);
         });
-       return teamPoints;
+        scores.put(matchid,teamPoints);
+        return teamPoints;
     }
-    public MatchState fetchscore(Integer matchid) {
+        public MatchState fetchscore(Integer matchid) {
         MatchState matchState =  staterepo.getstate(matchid);
         if(matchState == null) {
             matchState = new MatchState();
@@ -104,7 +117,9 @@ public class LeaderBoardService {
         }
     }
     public List<OverallPoints> overall() throws JsonProcessingException {
-
+        if(LeaderBoardService.points.size() > 0 ){
+            return  LeaderBoardService.points;
+        }
         List<MatchInfoEntity >matchInfoEntities = matchesService.fetchliveorcompleted();
         List<OverallPoints> points = new ArrayList<>();
         Map<String,OverallPoints> map = new HashMap<>();
@@ -137,6 +152,7 @@ public class LeaderBoardService {
 
         points = new ArrayList<>(map.values());
         points.sort(Comparator.comparing(OverallPoints::getTotalpoints).reversed());
+        LeaderBoardService.points=points;
         return points;
 
     }

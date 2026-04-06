@@ -27,11 +27,7 @@ public class MatchLoader {
     private static Map<Integer,String> map = new HashMap<>();
     public void  runmatch(){
 
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-         System.out.println("exeception occured");
-        }
+        LoadGameService.sleep(5);
         System.out.println("running");
         List<MatchInfoEntity> matchInfoEntities =  matchrepo.findAll().stream().filter(x->{
 

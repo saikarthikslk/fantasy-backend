@@ -147,7 +147,7 @@ public class MatchesService {
             ids.add(match.get().getTeam2().getTeamId());
             try {
                 CompletableFuture<List<PlayerEntity>> playerfuture = CompletableFuture.supplyAsync(()->playerRepo.getPlayers(ids));
-                CompletableFuture<List<Pointdto>> pt = CompletableFuture.supplyAsync(() -> playerPointsrepo.getpoints());
+                CompletableFuture<List<Pointdto>> pt = CompletableFuture.supplyAsync(() -> playerPointsrepo.getpoints(match.get().getMatchId()));
                 CompletableFuture<CustomTeamEntity> teamCompletableFuture = CompletableFuture.supplyAsync(()->customTeamrepo.findbymatchidandemail(id,email));
                 CompletableFuture<?> all = CompletableFuture.allOf(playerfuture,teamCompletableFuture ,pt);
                 all.join();
@@ -168,7 +168,7 @@ public class MatchesService {
         return matchSelection;
     }
     public boolean saveplayers(Integer id ,Boolean islive){
-        Optional<MatchInfoEntity> match = matchrepo.findById(id);
+            Optional<MatchInfoEntity> match = matchrepo.findById(id);
         if(match.isPresent()) {
             List<Integer> ids = new ArrayList<>();
             ids.add(match.get().getTeam1().getTeamId());

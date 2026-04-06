@@ -45,6 +45,9 @@ public class LoadGameService {
     private CustomTeamrepo customTeamrepo;
     @Autowired
     private Userrepo userrepo;
+    @Autowired
+    LeaderBoardService leaderBoardService;
+    public static List<Integer> stoppedmatches = new ArrayList();
     private static      JaroWinklerSimilarity jw = new JaroWinklerSimilarity();
 
     private ObjectMapper mapper = new ObjectMapper();
@@ -455,7 +458,7 @@ public class LoadGameService {
     public void  loadmatches(){
 
     }
-    public void  sleep(Integer sec) {
+    public static void  sleep(Integer sec) {
         try {
             System.out.println("Went to Sleep at  ** "+ System.currentTimeMillis() );
             Thread.sleep(sec * 1000);
@@ -524,7 +527,7 @@ public class LoadGameService {
 
     }
     public void pullscorecard(Integer matchid) throws IOException, InterruptedException {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
+
 
         MatchSelection matchSelection = matchesService.fetchPlayers(matchid, "");
         System.out.println("Running Match " + matchid );
@@ -533,9 +536,10 @@ public class LoadGameService {
             matchState = new MatchState();
             matchState.setMatchid(matchid);
             matchState.setTimestamp(System.currentTimeMillis());
+            matchStaterepo.save(matchState);
         }
         MatchInfoEntity matchInfoEntity = matchrepo.findById(matchid).get();
-        matchStaterepo.save(matchState);
+
         if(matchState.getTosswonby() == null) {
             while (true) {
                 Map<String,Object> response = httpCaller.fetchtoss(matchid+"");
@@ -583,6 +587,7 @@ public class LoadGameService {
         matchInfoEntity.setIsannounced(true);
         matchStaterepo.save(matchState);
         matchrepo.save(matchInfoEntity);
+
         notificationController.sendEvent("refresh",matchid);
         System.out.println("Toss Won by " + matchState.getTosswonby() );
         Integer[] innings = {-1};
@@ -626,7 +631,9 @@ public class LoadGameService {
         sleep(1);
         Map<String,PlayerPoints> playerPointsMap = points.stream().collect(Collectors.toMap(PlayerPoints::getPlayerid, x->x,(a, b)->a));
         boolean iscompleted = false;
+        boolean israin = false;
         int verify  = 0 ;
+        int change = 0 ;
         String url = "https://www.cricbuzz.com/live-cricket-scorecard/"+matchid;
         while (true) {
             try {
@@ -946,7 +953,7 @@ public class LoadGameService {
                         matchState.setInnings(2);
 
                     }
-                    if(!Objects.equals(matchInfoEntity.getState(), "Live")) {
+                    if(!iscompleted  && !Objects.equals(matchInfoEntity.getState(), "Live")) {
                         matchInfoEntity.setState("Live");
                         if(autoteam) {
                             autoload(matchid);
@@ -958,7 +965,10 @@ public class LoadGameService {
                     matchState.setInnings1(mapper.writeValueAsString(r1));
                     matchState.setInnings2(mapper.writeValueAsString(r2));
                    Map<String,Object> objectMap =  httpCaller.iscomplete(matchid+"");
-                   if(objectMap.containsKey("state") && objectMap.get("state").toString().equalsIgnoreCase("complete")) {
+                   if(objectMap.containsKey("state") && objectMap.get("state").toString().equalsIgnoreCase("complete")
+
+                   && !objectMap.get("status").toString().contains("rain")
+                   ) {
                        matchState.setMatchstatus(objectMap.get("status").toString());
                        iscompleted = true;
                        matchInfoEntity.setState("Completed");
@@ -973,10 +983,37 @@ public class LoadGameService {
                 matchStaterepo.save(matchState);
                 String i1  =  matchState.getInnings1() == null ? "": matchState.getInnings1();
                 String i2 =  matchState.getInnings2() == null ? "": matchState.getInnings2();
+                if(change >= 10) {
+                    Map<String,Object> objectMap =  httpCaller.iscomplete(matchid+"");
+                    if(objectMap.containsKey("status") ) {
+                        String status = objectMap.get("status").toString();
+                        String state = objectMap.get("state").toString();
+                        if (state.equalsIgnoreCase("complete")) {
+                            if (state.contains("rain") || status.contains("rain")) {
+
+                                iscompleted = true;
+                                matchInfoEntity.setState("Abandoned");
+                                matchState.setMatchstatus(status);
+                                matchrepo.save(matchInfoEntity);
+                                matchStaterepo.save(matchState);
+                            }
+                        }
+                    }
+                    change = 0;
+//                    sleep(30);
+
+                }
                 if(!ikey.equals(i1+":"+i2)) {
                     ikey = i1 + ":" + i2;
+                    change = 0;
+                    leaderBoardService.getpoints(matchid);
                     notificationController.sendEvent("refresh",matchid);
+
+                } else {
+                    change = change  + 1;
+
                 }
+
 
                 if(iscompleted  ) {
                     if(verify == 2) {
@@ -985,13 +1022,14 @@ public class LoadGameService {
                     verify = verify + 1;
                     sleep(2);
                 }else {
-                    sleep(30);
+//                    sleep(30);
                 }
             } catch (IOException e) {
                 System.err.println("Error fetching the page: " + e.getMessage());
             }
         }
         System.out.println("Match completed");
+        LeaderBoardService.points = new ArrayList<>();
         matchesService.saveplayers(matchid,false);
 
 
