@@ -6,6 +6,7 @@ import com.security.demo.model.Pointdto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface PlayerPointsrepo extends JpaRepository<PlayerPoints,Integer> {
     List<PlayerPoints> getpointsbymatchid(@Param("id") Integer id) ;
 
 
-    @Query(value = "select  playerid ,sum(totalpoints) as points from   player_stats where matchid in (select match_id  from match_info where state = 'Completed') group by playerid  \n" +
+    @Query(value = "select  playerid ,sum(totalpoints) as points from   player_stats where matchid != :mid and  matchid in (select match_id  from match_info where state = 'Completed') group by playerid  \n" +
             "order by points desc",nativeQuery = true)
-    List<Pointdto> getpoints() ;
+    List<Pointdto> getpoints(@Param("mid") Integer id) ;
 }
