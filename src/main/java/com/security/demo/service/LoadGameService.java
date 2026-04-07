@@ -612,7 +612,7 @@ public class LoadGameService {
         Integer[] innings = {-1};
         while (true) {
             Integer id = httpCaller.fetchInnigs(String.valueOf(matchid));
-            if(id!=-1){
+            if(id > 0 ){
                 innings[0]=id;
                 break;
             }
