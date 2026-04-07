@@ -575,7 +575,7 @@ public class LoadGameService {
                         String status = objectMap.get("status").toString();
                         String state = objectMap.get("state").toString();
                         if (state.equalsIgnoreCase("complete")) {
-                            if (state.contains("rain") || status.contains("rain")) {
+                            if ( (state.contains("rain") || status.contains("rain"))   &&  !status.toLowerCase().contains("won") ) {
 
                                 matchInfoEntity.setState("Abandoned");
                                 matchState.setMatchstatus(status);
@@ -1007,7 +1007,7 @@ public class LoadGameService {
                         String status = objectMap.get("status").toString();
                         String state = objectMap.get("state").toString();
                         if (state.equalsIgnoreCase("complete")) {
-                            if (state.contains("rain") || status.contains("rain")) {
+                            if (( state.contains("rain") || status.contains("rain")  )   && !status.toLowerCase().contains("won")   ) {
 
                                 iscompleted = true;
                                 matchInfoEntity.setState("Abandoned");
