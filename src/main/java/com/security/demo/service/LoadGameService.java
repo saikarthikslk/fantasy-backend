@@ -568,6 +568,25 @@ public class LoadGameService {
 
                     break;
                 }
+                Long seconds = (System.currentTimeMillis()- matchInfoEntity.getStartDate())/1000;
+                if(seconds > 5 * 3600) {
+                    Map<String,Object> objectMap =  httpCaller.iscomplete(matchid+"");
+                    if(objectMap.containsKey("status") ) {
+                        String status = objectMap.get("status").toString();
+                        String state = objectMap.get("state").toString();
+                        if (state.equalsIgnoreCase("complete")) {
+                            if (state.contains("rain") || status.contains("rain")) {
+
+                                matchInfoEntity.setState("Abandoned");
+                                matchState.setMatchstatus(status);
+                                matchrepo.save(matchInfoEntity);
+                                matchStaterepo.save(matchState);
+
+                                return;
+                            }
+                        }
+                    }
+                }
                 sleep(15);
 
             }
