@@ -1025,6 +1025,8 @@ public class LoadGameService {
                 if(!ikey.equals(i1+":"+i2)) {
                     ikey = i1 + ":" + i2;
                     change = 0;
+                    matchState.setInnings1(i1);
+                    matchState.setInnings2(i2);
                     leaderBoardService.getpoints(matchid);
                     notificationController.sendEvent("refresh",matchid);
 
