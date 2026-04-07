@@ -39,7 +39,7 @@ public class MatchesService {
 
 
 
-    private static  List<String> list = List.of("bench","substitutes","playing XI");
+    public static  List<String> list = List.of("bench","substitutes","playing XI");
 
 
 
@@ -213,7 +213,7 @@ public class MatchesService {
                 CompletableFuture<?> all = CompletableFuture.allOf(playerfuture, squads);
                 all.join();
                 Map<String ,List<String>> sq1 = squads.get();
-                if(sq1.size() > 0 ){
+                if(sq1.size() > 2 ){
                     List<PlayerEntity> playerEntities = playerfuture.get();
                     playerEntities.forEach(x -> {
                         for (String  key  : sq1.keySet())  {
