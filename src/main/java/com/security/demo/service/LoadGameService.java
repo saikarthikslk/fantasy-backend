@@ -1022,7 +1022,7 @@ public class LoadGameService {
 
                 }
                 ikey = mapper.writeValueAsString(r1)+":"+mapper.writeValueAsString(r2);
-
+                System.out.println(ikey);
                 if(!ikey.equals(i1+":"+i2)) {
                     ikey = i1 + ":" + i2;
                     change = 0;
