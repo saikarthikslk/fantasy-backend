@@ -245,7 +245,7 @@ public class HttpCaller {
         return responsetext;
 
     }
-    public Map<String,Object> fetchtoss(String matchid){
+    public Map<String,Object>  fetchtoss(String matchid){
         HttpRequest request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
                 .header("User-Agent", "Mozilla/5.0")
@@ -268,7 +268,7 @@ public class HttpCaller {
             if(objectMap.containsKey("tossResults")) {
                 Map<String,Object> toss = (Map<String, Object>) objectMap.get("tossResults");
 
-                if(toss.size() >0) {
+                if(toss.size() >0 && !Objects.equals(toss.get("tossWinnerId").toString(), "0")) {
 
                     String teamid = toss.get("tossWinnerId").toString();
                     String decision = toss.get("decision").toString();
