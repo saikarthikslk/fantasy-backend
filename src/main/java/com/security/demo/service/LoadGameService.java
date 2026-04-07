@@ -1021,12 +1021,13 @@ public class LoadGameService {
                     sleep(30);
 
                 }
-                
+                ikey = mapper.writeValueAsString(r1)+":"+mapper.writeValueAsString(r2);
+
                 if(!ikey.equals(i1+":"+i2)) {
                     ikey = i1 + ":" + i2;
                     change = 0;
-                    matchState.setInnings1(i1);
-                    matchState.setInnings2(i2);
+                    matchState.setInnings1(mapper.writeValueAsString(r1));
+                    matchState.setInnings2(mapper.writeValueAsString(r2));
                     leaderBoardService.getpoints(matchid);
                     notificationController.sendEvent("refresh",matchid);
 
