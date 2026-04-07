@@ -38,9 +38,9 @@ public class LeaderBoardService {
     public Map<Integer,List<TeamPoints>> scores = new HashMap<>();
 
     public List<TeamPoints> getmatches(Integer matchid) throws JsonProcessingException {
-        if(scores.containsKey(matchid)) {
-            return scores.get(matchid);
-        }
+        // if(scores.containsKey(matchid)) {
+        //     return scores.get(matchid);
+        // }
         scores.put(matchid,getpoints(matchid));
         return scores.get(matchid);
     }
