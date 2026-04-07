@@ -998,8 +998,7 @@ public class LoadGameService {
                 points.forEach(x->{
                     x.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(x));
                 });
-                playerPointsrepo.saveAll(points);
-                matchStaterepo.save(matchState);
+                
                 String i1  =  matchState.getInnings1() == null ? "": matchState.getInnings1();
                 String i2 =  matchState.getInnings2() == null ? "": matchState.getInnings2();
                 if(change >= 10) {
@@ -1022,6 +1021,7 @@ public class LoadGameService {
                     sleep(30);
 
                 }
+                
                 if(!ikey.equals(i1+":"+i2)) {
                     ikey = i1 + ":" + i2;
                     change = 0;
@@ -1032,6 +1032,9 @@ public class LoadGameService {
                     change = change  + 1;
 
                 }
+                playerPointsrepo.saveAll(points);
+                matchStaterepo.save(matchState);
+                System.out.println("data saved");
 
 
                 if(iscompleted  ) {
