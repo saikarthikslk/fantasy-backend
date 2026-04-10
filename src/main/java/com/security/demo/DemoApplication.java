@@ -47,15 +47,15 @@ public class DemoApplication {
 //	}
 //
 //	//fetch daily matches
-//	@Scheduled(fixedRate = 86400000)
-//	public void run1() throws IOException, InterruptedException {
-//		httpCaller.fetchsavematches();
-//
-//	}
+	@Scheduled(fixedRate = 86400000)
+	public void run1() throws IOException, InterruptedException {
+		httpCaller.fetchsavematches();
+
+	}
 //	//run every 30mins
 	@Scheduled(fixedRate = 900000)
 	public void run2() throws IOException, InterruptedException {
-//		matchLoader.fetchmatchsabouttostart();
+		matchLoader.fetchmatchsabouttostart();
 
 	}
 //
@@ -63,7 +63,6 @@ public class DemoApplication {
 	@Scheduled(fixedRate = 900000)
 	public void rungame() throws IOException, InterruptedException {
 		matchLoader.runmatch();
-//		gameService.autoload(149721);
 	}
 //
 //	@Autowired
