@@ -76,388 +76,6 @@ public class LoadGameService {
     }
     @Autowired
     NotificationController notificationController;
-//    public void runGame(Integer  matchid ,Long timestamp) {
-//        MatchSelection matchSelection = matchesService.fetchPlayers(matchid, "");
-//        MatchState matchState = new MatchState();
-//        List<PlayerEntity> playerEntities = matchSelection.getPlayers();
-//        Map<String, PlayerEntity> playernamemap = new HashMap<>();
-//        Map<String, PlayerEntity> playeridmap = new HashMap<>();
-//        List<PlayerPoints> points = playerPointsrepo.getpointsbymatchid(matchid);
-//        matchState.setPoints(points);
-//        matchState.setMatchid(matchid);
-//        boolean isp[] ={false};
-//        matchState.setTimestamp(timestamp);
-//        playerEntities.forEach(playerEntity -> {
-//            playernamemap.put(playerEntity.getName(), playerEntity);
-//            playeridmap.put(playerEntity.getId(), playerEntity);
-//            if(points.isEmpty() || isp[0]) {
-//            PlayerPoints playerPoints = new PlayerPoints();
-//            playerPoints.setPlayerid(playerEntity.getId());
-//            playerPoints.setMatchid(matchid);
-//            points.add(playerPoints);
-//                isp[0]=true;
-//            }
-//
-//        });
-//        if(isp[0]) {
-//            playerPointsrepo.saveAll(points);
-//        }
-//        Map<String,PlayerPoints> playerPointsMap = points.stream().collect(Collectors.toMap(PlayerPoints::getPlayerid, x->x,(a, b)->a));
-//        String query = "";
-//        boolean islegaldelivey = true;
-//        boolean iscatch = false;
-//        boolean isrunout = false;
-//        boolean isbowled = false;
-//        boolean isstumped = false;
-//        boolean islbw = false;
-//        Integer runs = 0;
-//        Integer bounday = 0;
-//        boolean iswicket = false;
-//        Integer extras = 0;
-//        Integer legbyes = 0;
-//        String wicketassistname = "";
-//        String p1 = "";
-//        String p2 = "";
-//        String b1 = "";
-//        boolean isoverdone = false;
-//        String ballid = "";
-//        Pattern pattern;
-//        Matcher matcher;
-//        Boolean ismaidain = false;
-//        Boolean innigsfone = false;
-//        List<Ball> balls = new ArrayList<>();
-//        Map<String, String> finsihedballs = new HashMap();
-//
-//        while (true) {
-//            query = matchState.getMatchid() + "/" + matchState.getInnings() + "/" + matchState.getTimestamp();
-//            List<Map<String, Object>> resp = httpCaller.fetchdata(query);
-//            Collections.reverse(resp);
-//
-//            for (Map<String, Object> event : resp) {
-//                String key = getkey(event);
-//                if (event.containsKey("ballMetric") && !finsihedballs.containsKey(key)) {
-//                    runs= 0;
-//                    bounday = 0;
-//                    legbyes =0 ;
-//                    iswicket = false;
-//                    extras = 0 ;
-//                    wicketassistname = "";
-//                    isoverdone = false;
-//                    islegaldelivey = true;
-//                    iscatch = false;
-//                    isrunout = false;
-//                    isbowled = false;
-//                    isstumped = false;
-//                    islbw = false;
-//
-//                    ballid = event.get("ballMetric").toString();
-//                    System.out.println(ballid);
-//                    if(ballid.equals("1.3")) {
-//                        int y = 1;
-//                    }
-//
-//                    finsihedballs.put(key, ballid);
-//                    String teamname = (String) event.get("teamName");
-//                    matchState.setTeamid(teamname);
-//                    Ball ball = new Ball();
-//                    ball.setInnings(matchState.getInnings());
-//                    ball.setTeam(matchState.getTeamid());
-//                    if(ballid.equals("17.5")){
-//                        int y = 1;
-//                    }
-//
-//                    p1 = ((Map<String, Object>) (event.get("batsmanDetails"))).get("playerId").toString();
-//                    b1 = ((Map<String, Object>) (event.get("bowlerDetails"))).get("playerId").toString();
-//                    List<String> events = (List<String>) event.get("event");
-//                    if (events.contains("over-break")) {
-//                        isoverdone = true;
-//                    }
-//                    String comtext = (String) event.get("commText");
-//                    if(comtext.contains("maiden")) {
-//                        ismaidain = true;
-//                    }
-//                    if (comtext.contains("<b>FOUR</b>")) {
-//                        bounday = 4;
-//                    }
-//                    if (comtext.contains("<b>SIX</b>")) {
-//                        bounday = 6;
-//                    }
-//                    comtext = comtext.replace("(sub)","");
-//                    if (comtext.contains("<b>out</b>")) {
-//                        iswicket = true;
-//                        if (comtext.contains("Caught by")) {
-//                            iscatch = true;
-//                            ball.setWicketype("caught");
-//                            ball.setPlayerout(p1);
-//                            String cby = "";
-//                            pattern = Pattern.compile("(?i)c\\s+([A-Za-z\\s()]+?)\\s+b");
-//                            matcher = pattern.matcher(comtext);
-//                            if (matcher.find()) {
-//                                cby = matcher.group(1);
-//                                wicketassistname = getplayer(cby, playernamemap).getId();
-//                            }
-//                            ball.setCatchp(wicketassistname);
-//                        } else if (comtext.contains("Bowled!!")) {
-//                            isbowled = true;
-//                            ball.setWicketype("bowled");
-//                            ball.setPlayerout(p1);
-//                        } else if (comtext.contains("Run Out!!")) {
-//                            isrunout = true;
-//                            ball.setWicketype("runout");
-//                            ball.setPlayerout(p1);
-//                            pattern = Pattern.compile("(?i)run out\\s*\\(([^)]+)\\)");
-//                            String sby = "";
-//                            matcher = pattern.matcher(comtext);
-//                            if (matcher.find()) {
-//                                sby = matcher.group(1);
-//                                wicketassistname = getplayer(sby, playernamemap).getId();
-//                                ball.setRunoutp(wicketassistname);
-//                                pattern = Pattern.compile("(?i)>.*?([A-Za-z\\s]+?)\\s+Run\\s+Out!!");
-//                                matcher = pattern.matcher(comtext);
-//                                if (matcher.find()) {
-//                                    sby = matcher.group(1);
-//                                    PlayerEntity p2name = getplayer(sby, playernamemap);
-//                                    if (p2name != null && p2name.getName().toLowerCase().contains(sby.toLowerCase())) {
-//                                        ball.setPlayerout(p2);
-//                                    }
-//                                }
-//                            }
-//                        } else if (comtext.contains("Lbw!!")) {
-//                            islbw = true;
-//                            ball.setWicketype("lbw");
-//                            ball.setPlayerout(p1);
-//
-//
-//                        } else if (comtext.contains("Stumped!!")) {
-//                            isstumped = true;
-//                            ball.setWicketype("stumps");
-//                            ball.setPlayerout(p1);
-//                           String sby = "";
-//                            pattern = Pattern.compile("st\\s+([A-Za-z\\s]+?)\\s+b");
-//                            matcher = pattern.matcher(comtext);
-//                            if (matcher.find()) {
-//                                sby = matcher.group(1);
-//                                wicketassistname = getplayer(sby, playernamemap).getId();
-//                            }
-//                            ball.setStumpout(wicketassistname);
-//                        } else {
-//                            isbowled = true;
-//                            ball.setWicketype("bowled");
-//                            ball.setPlayerout(p1);
-//                        }
-//                    }
-//
-//
-//                        if (comtext.contains("<b>wide</b>")) {
-//                            islegaldelivey = false;
-//                            extras = 1;
-//                            ball.setIswide(1);
-//                        }
-//                        for (int i = 0; i < 5; i++) {
-//                            if (comtext.contains(i + " run")) {
-//                                if (comtext.contains("leg byes")) {
-//                                    legbyes = i;
-//                                } else {
-//                                    runs = i;
-//                                }
-//                                break;
-//                            }
-//                        }
-//                        Integer totalruns = runs + bounday + extras + legbyes;
-//
-//                        if (totalruns > 0) {
-//                            matchState.setCurrentscore(matchState.getCurrentscore() + totalruns);
-//                        }
-//                        if (iswicket) {
-//                            matchState.setCurrentwickets(matchState.getCurrentwickets() + 1);
-//                        }
-//
-//                        ball.setP1(p1);
-//                        ball.setP2(p2);
-//                        ball.setBowler(b1);
-//                        ball.setBall(ballid);
-//                        ball.setTotalruns(totalruns);
-//                        ball.setRunsran(runs);
-//                        ball.setLegbyes(legbyes);
-//                        ball.setBoundary(bounday);
-//                        ball.setScore(matchState.getCurrentscore());
-//                        ball.setWickets(matchState.getCurrentwickets());
-//                        balls.add(ball);
-//                        if(ismaidain) {
-//                        playerPointsMap.get(b1).setMaidens(playerPointsMap.get(b1).getMaidens()+1);
-//                        }
-//
-//                    PlayerPoints playerPoints =    playerPointsMap.get(p1);
-//                    playerPoints.setFours( playerPoints.getFours() + bounday == 4 ? 1:0);
-//                    playerPoints.setSixes( playerPoints.getSixes() + bounday == 6 ? 1:0);
-//                    PlayerPoints playerPoints1 =    playerPointsMap.get(b1);
-//                    List<PlayerPoints> pointstosave = new ArrayList<>();
-//                        if(!iswicket  ) {
-//                          playerPoints.setRuns(playerPoints.getRuns() + runs + bounday);
-//                          playerPoints.setBallplayed(playerPoints.getBallplayed() + 1);
-//                          playerPoints.setRunString(playerPoints.getRunString() + " " +(runs + bounday));
-//                          playerPoints.setScore(playerPoints.getScore() + runs+bounday);
-//                          playerPoints1.setBallsbowled(playerPoints1.getBallsbowled()  + 1);
-//                          playerPoints1.setScoregiven(playerPoints1.getScoregiven() + totalruns);
-//
-//
-//                          if(legbyes > 0 ) {
-//                              playerPoints1.setBallstring(playerPoints1.getBallstring() + " L" + legbyes);
-//                          } else if (ball.getIswide() == 1) {
-//                              playerPoints1.setBallstring(playerPoints1.getBallstring() + " WI" +extras);
-//                          }else if (ball.getIsnoball() == 1) {
-//                              playerPoints1.setBallstring(playerPoints1.getBallstring() + " NB" +totalruns);
-//                          }else{
-//                              playerPoints1.setBallstring(playerPoints1.getBallstring() + " " +totalruns);
-//                          }
-//
-//                        }else {
-//
-//                            if(isbowled) {
-//                                playerPoints.setBallplayed(playerPoints.getBallplayed() + 1);
-//                                playerPoints.setRunString(playerPoints.getRunString() + " B" );
-//                                playerPoints.setOut(true);
-//                                playerPoints.setType("BOWLED");
-//                                playerPoints1.setBallsbowled(playerPoints1.getBallsbowled()  + 1);
-//                                playerPoints1.setBallstring(playerPoints1.getBallstring() + " W");
-//                                playerPoints1.setScoregiven(playerPoints1.getScoregiven() + totalruns);
-//                            } else if (iscatch) {
-//                                playerPoints.setBallplayed(playerPoints.getBallplayed() + 1);
-//                                playerPoints.setRunString(playerPoints.getRunString() + " C" );
-//
-//                                playerPoints.setOut(true);
-//                                playerPoints.setType("CATCH");
-//
-//                                playerPoints1.setBallsbowled(playerPoints1.getBallsbowled()  + 1);
-//                                playerPoints1.setBallstring(playerPoints1.getBallstring() + " W");
-//                                playerPoints1.setScoregiven(playerPoints1.getScoregiven() + totalruns);
-//                                PlayerPoints cby =    playerPointsMap.get(ball.getCatchp());
-//                                cby.setCatches(cby.getCatches() +  1);
-//                                cby.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(cby));
-//                                pointstosave.add(cby);
-//                            } else if (isstumped) {
-//                                playerPoints.setBallplayed(playerPoints.getBallplayed() + 1);
-//                                playerPoints.setRunString(playerPoints.getRunString() + " S" );
-//
-//                                playerPoints.setOut(true);
-//                                playerPoints.setType("STUMPED");
-//
-//                                playerPoints1.setBallsbowled(playerPoints1.getBallsbowled()  + 1);
-//                                playerPoints1.setBallstring(playerPoints1.getBallstring() + " W");
-//                                playerPoints1.setScoregiven(playerPoints1.getScoregiven() + totalruns);
-//                                PlayerPoints cby =    playerPointsMap.get(ball.getStumpout());
-//                                cby.setStumping(cby.getStumping() +  1);
-//                                cby.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(cby));
-//                                pointstosave.add(cby);
-//                            } else if (isrunout) {
-//
-//                                PlayerPoints P1 =    playerPointsMap.get(p1);
-//                                PlayerPoints P2 =    playerPointsMap.get(p2);
-//                                P1.setBallplayed(P1.getBallplayed() + 1);
-//                                if(Objects.equals(p1, ball.getRunoutp()))  {
-//                                    P1.setRunString( P1.getRunString() + " RO" + runs );
-//
-//                                    playerPoints.setOut(true);
-//                                    playerPoints.setType("RUNOUT");
-//                                }else  {
-//                                    P1.setRunString( P1.getRunString() + " " + runs );
-//                                    P2.setRunString( P1.getRunString() + " RO" + runs );
-//
-//                                    P2.setOut(true);
-//                                    P2.setType("STUMPED");
-//                                    P2.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(P2));
-//                                    pointstosave.add(P2);
-//                                }
-//
-//
-//                                playerPoints1.setBallsbowled(playerPoints1.getBallsbowled()  + 1);
-//                                playerPoints1.setBallstring(playerPoints1.getBallstring() + " 0");
-//                                playerPoints1.setScoregiven(playerPoints1.getScoregiven() + totalruns);
-//
-//                                PlayerPoints runoutby =    playerPointsMap.get(ball.getRunoutp());
-//                                runoutby.setRunouts(runoutby.getRunouts() + 1);
-//                                runoutby.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(runoutby));
-//                                pointstosave.add(runoutby);
-//
-//                            } else {
-//                                playerPoints.setBallplayed(playerPoints.getBallplayed() + 1);
-//                                playerPoints.setRunString(playerPoints.getRunString() + " LB" );
-//                                playerPoints.setOut(true);
-//                                playerPoints.setType("LBW");
-//
-//                                playerPoints1.setBallsbowled(playerPoints1.getBallsbowled()  + 1);
-//                                playerPoints1.setBallstring(playerPoints1.getBallstring() + " LB");
-//                                playerPoints1.setScoregiven(playerPoints1.getScoregiven() + totalruns);
-//                            }
-//
-//
-//                        }
-//
-//                        playerPoints.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(playerPoints));
-//                    playerPoints1.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(playerPoints1));
-//                    pointstosave.add(playerPoints1);
-//                    pointstosave.add(playerPoints);
-//                   List<PlayerPoints> playerPointsList = playerPointsrepo.saveAll(pointstosave);
-//                   playerPointsList.forEach(x->{
-//                       playerPointsMap.put(x.getPlayerid(),x);
-//                   });
-//                   matchState.setPoints(playerPointsMap.values().stream().toList());
-//                    if (runs % 2 != 0 || legbyes % 2 != 0) {
-//                        if (!isoverdone) {
-//                            String p3 = p1;
-//                            p1 = p2;
-//                            p2 = p3;
-//                        }
-//                    } else {
-//                        if (isoverdone) {
-//                            String p3 = p1;
-//                            p1 = p2;
-//                            p2 = p3;
-//                        }
-//                    }
-//                        if(isoverdone ){
-//                            System.out.println(matchState.getCurrentscore()+"/" +matchState.getCurrentwickets() +" "+ ballid);
-//                        }
-//                        if(matchState.getInnings() == 1) {
-//                            if (matchState.getCurrentwickets().equals(10)) {
-//                                matchState.setInnings(2);
-//                                matchState.setInnings1(matchState.getCurrentscore() + "/" + matchState.getCurrentwickets());
-//                                matchState.setInnings1state(balls);
-//                                matchState.setCurrentwickets(0);
-//                                matchState.setCurrentscore(0);
-//                            } else if (isoverdone && ballid.contains("19.6")) {
-//                                innigsfone = true;
-//                                matchState.setInnings(2);
-//                                matchState.setInnings1(matchState.getCurrentscore() + "/" + matchState.getCurrentwickets());
-//                                matchState.setInnings1state(balls);
-//                                matchState.setCurrentwickets(0);
-//                                matchState.setCurrentscore(0);
-//                            }
-//
-//                        }else  {
-//                            if(matchState.getCurrentscore() > Integer.parseInt(matchState.getInnings1().split("/")[0])){
-//                                matchState.setMatchstatus("Completed" );
-//                            }
-//                            else if(matchState.getCurrentwickets().equals(10) || (isoverdone && ballid.contains("19.6"))) {
-//                                matchState.setMatchstatus("Completed" );
-//
-//                            }
-//                        }
-//
-//                }
-//            }
-//            timestamp = timestamp + 60000;
-//            matchState.setTimestamp(timestamp);
-//            if(matchState.getMatchstatus().equals("Completed")) {
-//                break;
-//            }
-//
-//        }
-//    }
-
-    public void  loadmatches(){
-
-    }
     public static void  sleep(Integer sec) {
         try {
             System.out.println("Went to Sleep at  ** "+ System.currentTimeMillis() );
@@ -539,7 +157,8 @@ public class LoadGameService {
             matchStaterepo.save(matchState);
         }
         MatchInfoEntity matchInfoEntity = matchrepo.findById(matchid).get();
-
+        matchesService.saveplayers(matchid, true);
+        Integer checktoss = 2;
         if(matchState.getTosswonby() == null) {
             while (true) {
                 Map<String,Object> response = httpCaller.fetchtoss(matchid+"");
@@ -565,8 +184,10 @@ public class LoadGameService {
                             matchState.setTeam2(matchInfoEntity.getTeam1().getTeamId()+"");
                         }
                     }
-
-                    break;
+                    checktoss -=1;
+                    if(checktoss ==0 ) {
+                        break;
+                    }
                 }
                 Long seconds = (System.currentTimeMillis()- matchInfoEntity.getStartDate())/1000;
                 if(seconds > 5 * 3600) {
@@ -575,7 +196,7 @@ public class LoadGameService {
                         String status = objectMap.get("status").toString();
                         String state = objectMap.get("state").toString();
                         if (state.equalsIgnoreCase("complete")) {
-                            if (state.contains("rain") || status.contains("rain")) {
+                            if ((state.contains("rain") || status.contains("rain")) ) {
 
                                 matchInfoEntity.setState("Abandoned");
                                 matchState.setMatchstatus(status);
@@ -612,7 +233,7 @@ public class LoadGameService {
         Integer[] innings = {-1};
         while (true) {
             Integer id = httpCaller.fetchInnigs(String.valueOf(matchid));
-            if(id!=-1){
+            if(id>0){
                 innings[0]=id;
                 break;
             }
@@ -650,7 +271,6 @@ public class LoadGameService {
         sleep(1);
         Map<String,PlayerPoints> playerPointsMap = points.stream().collect(Collectors.toMap(PlayerPoints::getPlayerid, x->x,(a, b)->a));
         boolean iscompleted = false;
-        boolean israin = false;
         int verify  = 0 ;
         int change = 0 ;
         String url = "https://www.cricbuzz.com/live-cricket-scorecard/"+matchid;
@@ -986,7 +606,7 @@ public class LoadGameService {
                    Map<String,Object> objectMap =  httpCaller.iscomplete(matchid+"");
                    if(objectMap.containsKey("state") && objectMap.get("state").toString().equalsIgnoreCase("complete")
 
-                   && !objectMap.get("status").toString().contains("rain")
+                   &&  objectMap.get("status").toString().toLowerCase().contains("won")
                    ) {
                        matchState.setMatchstatus(objectMap.get("status").toString());
                        iscompleted = true;
@@ -998,8 +618,7 @@ public class LoadGameService {
                 points.forEach(x->{
                     x.setTotalpoints(FantasyPointsCalculator.calculateTotalPoints(x));
                 });
-                playerPointsrepo.saveAll(points);
-                matchStaterepo.save(matchState);
+
                 String i1  =  matchState.getInnings1() == null ? "": matchState.getInnings1();
                 String i2 =  matchState.getInnings2() == null ? "": matchState.getInnings2();
                 if(change >= 10) {
@@ -1019,14 +638,16 @@ public class LoadGameService {
                         }
                     }
                     change = 0;
-                    sleep(30);
+//                    sleep(30);
 
                 }
                 if(!ikey.equals(i1+":"+i2)) {
-                    ikey = i1 + ":" + i2;
                     change = 0;
-                    leaderBoardService.getpoints(matchid);
+                    ikey = i1+":"+i2;
+//                    leaderBoardService.getpoints(matchid);
                     notificationController.sendEvent("refresh",matchid);
+                    playerPointsrepo.saveAll(points);
+                    matchStaterepo.save(matchState);
 
                 } else {
                     change = change  + 1;
@@ -1041,7 +662,7 @@ public class LoadGameService {
                     verify = verify + 1;
                     sleep(2);
                 }else {
-                    sleep(30);
+//                    sleep(30);
                 }
             } catch (IOException e) {
                 System.err.println("Error fetching the page: " + e.getMessage());

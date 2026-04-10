@@ -2,10 +2,12 @@ package com.security.demo.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.security.demo.DBmodel.MatchState;
+import com.security.demo.config.User;
 import com.security.demo.model.OverallPoints;
 import com.security.demo.model.TeamPoints;
 import com.security.demo.service.LeaderBoardService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,8 +32,8 @@ public class LeaderBoardController {
     }
 
     @GetMapping("/match/{matchid}")
-    public List<TeamPoints> getsortedresults(@PathVariable("matchid") Integer matchid) throws JsonProcessingException {
-        return leaderBoardService.getmatches(matchid);
+    public List<TeamPoints> getsortedresults(@AuthenticationPrincipal User user , @PathVariable("matchid") Integer matchid) throws JsonProcessingException {
+        return leaderBoardService.getmatches(matchid , user.getUsername());
     }
 
 }

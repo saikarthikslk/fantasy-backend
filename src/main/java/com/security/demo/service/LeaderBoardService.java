@@ -32,25 +32,26 @@ public class LeaderBoardService {
 
     @Autowired
     MatchStaterepo staterepo;
+    @Autowired
+    Matchrepo matchrepo;
 
     public static List<OverallPoints> points = new ArrayList<>();
 
     public Map<Integer,List<TeamPoints>> scores = new HashMap<>();
 
-    public List<TeamPoints> getmatches(Integer matchid) throws JsonProcessingException {
-        if(scores.containsKey(matchid)) {
-            return scores.get(matchid);
-        }
-        scores.put(matchid,getpoints(matchid));
-        return scores.get(matchid);
+    public List<TeamPoints> getmatches(Integer matchid , String  email) throws JsonProcessingException {
+
+
+        return getpoints(matchid , email);
     }
-    public List<TeamPoints> getpoints(Integer matchid) throws JsonProcessingException {
+    public List<TeamPoints> getpoints(Integer matchid , String  email) throws JsonProcessingException {
         List<CustomTeamEntity> customTeam =  customTeamrepo.findbymatchid(matchid);
         if(customTeam.isEmpty()) {
             return  new ArrayList<>();
         }
         Map<String,PlayerPoints> pp = playerPointsrepo.getpointsbymatchid(matchid).stream().collect(Collectors.toMap(PlayerPoints::getPlayerid, x->x , (x, b)->x));
-
+        MatchInfoEntity entity = matchrepo.findById(matchid).get();
+        String state = entity.getState();
         List<TeamPoints> teamPoints = new ArrayList<>();
         for (CustomTeamEntity c1 : customTeam) {
             User user = userrepo.findByEmail(c1.getEmail());
@@ -90,19 +91,27 @@ public class LeaderBoardService {
                 playerchosens.add(playerchosen);
 
             }
+
+            if(state.equalsIgnoreCase("Upcoming")) {
+                if(email.equals(c1.getEmail())) {
+                    points.setPlayerEntities(playerchosens);
+                    points.setDid(c1.getId());
+                }
+            }else  {
+                points.setPlayerEntities(playerchosens);
+                points.setDid(c1.getId());
+
+            }
             points.setTotalpoints(totalpoints);
-            points.setPlayerEntities(playerchosens);
-            points.setDid(c1.getId());
             points.setImageurl(user.getProfielpic());
             teamPoints.add(points);
-
         }
 
         teamPoints.sort(Comparator.comparing(TeamPoints::getTotalpoints).reversed());
         IntStream.range(1,teamPoints.size()+1).forEach(i -> {
             teamPoints.get(i-1).setPosition(i);
         });
-        scores.put(matchid,teamPoints);
+
         return teamPoints;
     }
         public MatchState fetchscore(Integer matchid) {
@@ -124,7 +133,7 @@ public class LeaderBoardService {
         List<OverallPoints> points = new ArrayList<>();
         Map<String,OverallPoints> map = new HashMap<>();
         for (MatchInfoEntity match : matchInfoEntities) {
-            List<TeamPoints> points1 =  getmatches(match.getMatchId());
+            List<TeamPoints> points1 =  getmatches(match.getMatchId(),"");
             for (TeamPoints points2 : points1) {
                 String name = points2.getEmail();
                 if(!map.containsKey(name)) {

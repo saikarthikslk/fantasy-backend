@@ -35,38 +35,40 @@ public class DemoApplication {
 	MatchLoader matchLoader;
 
 	private static List<CompletableFuture> futures = new ArrayList<>();
-	@Scheduled(fixedRate = 18000000)
-	public void run() throws IOException, InterruptedException {
+//
+//
+//	@Scheduled(fixedRate = 18000000)
+//	public void run() throws IOException, InterruptedException {
+////		httpCaller.fetchsavematches();
+////		httpCaller.loadTeamData();
+////		httpCaller.loadSquaddata();
+//
+//
+//	}
+//
+//	//fetch daily matches
+//	@Scheduled(fixedRate = 86400000)
+//	public void run1() throws IOException, InterruptedException {
 //		httpCaller.fetchsavematches();
-//		httpCaller.loadTeamData();
-//		httpCaller.loadSquaddata();
-
-
-	}
-
-	//fetch daily matches
-	@Scheduled(fixedRate = 86400000)
-	public void run1() throws IOException, InterruptedException {
-		httpCaller.fetchsavematches();
-
-	}
-	//run every 30mins
-	@Scheduled(fixedRate = 1800000)
+//
+//	}
+//	//run every 30mins
+	@Scheduled(fixedRate = 900000)
 	public void run2() throws IOException, InterruptedException {
-		matchLoader.fetchmatchsabouttostart();
+//		matchLoader.fetchmatchsabouttostart();
 
 	}
-
+//
 //	run every 30mins
-	@Scheduled(fixedRate = 1800000)
+	@Scheduled(fixedRate = 900000)
 	public void rungame() throws IOException, InterruptedException {
 		matchLoader.runmatch();
+//		gameService.autoload(149721);
 	}
-
-	@Autowired
-	NotificationController notificationController;
-
-
+//
+//	@Autowired
+//	NotificationController notificationController;
+//
 
 
 

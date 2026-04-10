@@ -49,7 +49,7 @@ public class MatchesService {
         matches.forEach(m ->{
             if(m.getState().equals("Completed")) {
                 try {
-                    List<TeamPoints > points =  service.getmatches(m.getMatchId());
+                    List<TeamPoints > points =  service.getmatches(m.getMatchId(),"");
                     MatchState state = matchStaterepo.getstate(m.getMatchId());
                     if(points.size() > 0 ) {
                         Double p = points.get(0).getTotalpoints();
