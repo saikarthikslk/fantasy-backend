@@ -658,8 +658,7 @@ public class LoadGameService {
                     change = change  + 1;
 
                 }
-                playerPointsrepo.saveAll(points);
-                matchStaterepo.save(matchState);
+
                 System.out.println("data saved");
 
 
