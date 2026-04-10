@@ -76,6 +76,7 @@ public class LoadGameService {
     }
     @Autowired
     NotificationController notificationController;
+
     public static void  sleep(Integer sec) {
         try {
             System.out.println("Went to Sleep at  ** "+ System.currentTimeMillis() );
@@ -196,8 +197,7 @@ public class LoadGameService {
                         String status = objectMap.get("status").toString();
                         String state = objectMap.get("state").toString();
                         if (state.equalsIgnoreCase("complete")) {
-                            if ((state.contains("rain") || status.contains("rain")) ) {
-
+                            if ( (state.contains("rain") || status.contains("rain"))   &&  !status.toLowerCase().contains("won") ) {
                                 matchInfoEntity.setState("Abandoned");
                                 matchState.setMatchstatus(status);
                                 matchrepo.save(matchInfoEntity);
@@ -233,7 +233,8 @@ public class LoadGameService {
         Integer[] innings = {-1};
         while (true) {
             Integer id = httpCaller.fetchInnigs(String.valueOf(matchid));
-            if(id>0){
+
+            if(id > 0 ){
                 innings[0]=id;
                 break;
             }
@@ -607,6 +608,7 @@ public class LoadGameService {
                    if(objectMap.containsKey("state") && objectMap.get("state").toString().equalsIgnoreCase("complete")
 
                    &&  objectMap.get("status").toString().toLowerCase().contains("won")
+
                    ) {
                        matchState.setMatchstatus(objectMap.get("status").toString());
                        iscompleted = true;
@@ -627,7 +629,7 @@ public class LoadGameService {
                         String status = objectMap.get("status").toString();
                         String state = objectMap.get("state").toString();
                         if (state.equalsIgnoreCase("complete")) {
-                            if (state.contains("rain") || status.contains("rain")) {
+                            if (( state.contains("rain") || status.toLowerCase().contains("rain")  )   && !status.toLowerCase().contains("won")   ) {
 
                                 iscompleted = true;
                                 matchInfoEntity.setState("Abandoned");
@@ -638,13 +640,16 @@ public class LoadGameService {
                         }
                     }
                     change = 0;
-//                    sleep(30);
+                    sleep(30);
 
                 }
+            
+                System.out.println(ikey);
                 if(!ikey.equals(i1+":"+i2)) {
                     change = 0;
                     ikey = i1+":"+i2;
-//                    leaderBoardService.getpoints(matchid);
+                    matchState.setInnings1(mapper.writeValueAsString(r1));
+                    matchState.setInnings2(mapper.writeValueAsString(r2));
                     notificationController.sendEvent("refresh",matchid);
                     playerPointsrepo.saveAll(points);
                     matchStaterepo.save(matchState);
@@ -653,6 +658,9 @@ public class LoadGameService {
                     change = change  + 1;
 
                 }
+                playerPointsrepo.saveAll(points);
+                matchStaterepo.save(matchState);
+                System.out.println("data saved");
 
 
                 if(iscompleted  ) {
@@ -662,7 +670,7 @@ public class LoadGameService {
                     verify = verify + 1;
                     sleep(2);
                 }else {
-//                    sleep(30);
+                    sleep(30);
                 }
             } catch (IOException e) {
                 System.err.println("Error fetching the page: " + e.getMessage());

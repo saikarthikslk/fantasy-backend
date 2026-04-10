@@ -42,7 +42,7 @@ public class LeaderBoardService {
     public List<TeamPoints> getmatches(Integer matchid , String  email) throws JsonProcessingException {
 
 
-        return getpoints(matchid , email);
+        return getpoints(matchid, email);
     }
     public List<TeamPoints> getpoints(Integer matchid , String  email) throws JsonProcessingException {
         List<CustomTeamEntity> customTeam =  customTeamrepo.findbymatchid(matchid);
