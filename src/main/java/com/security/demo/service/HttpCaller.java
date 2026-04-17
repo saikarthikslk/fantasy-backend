@@ -430,6 +430,7 @@ public class HttpCaller {
         Map<String,PlayerEntity> playersmap = playerRepo.findAll().stream().collect(Collectors.toMap(x->x.getId(),x->x,(a,b)->a));
         List<PlayerEntity> playerEntitiestobesaved = new ArrayList<>();
          Map<String,TeamEntity> teams = teamRepo.findAll().stream().collect(Collectors.toMap(x->x.getTeamSName() , x -> x , (a,b)->a));
+        Map<Integer,TeamEntity> teams1 = teamRepo.findAll().stream().collect(Collectors.toMap(x->x.getTeamId() , x -> x , (a,b)->a));
         matchInfoEntities.forEach(x->{
             int id = x.getMatchId();
             HttpRequest request = HttpRequest.newBuilder()
@@ -449,6 +450,8 @@ public class HttpCaller {
 
                 if (response.statusCode() == 200) {
                     MatchData players = mapper.readValue(response.body(), MatchData.class);
+                    Integer team1 = players.getTeam1().getTeam().getTeamid();
+                    Integer team2 = players.getTeam2().getTeam().getTeamid();
                     players.getTeam1().getPlayers()
                             .forEach(
                                     p1-> {
@@ -475,7 +478,7 @@ public class HttpCaller {
                                             } else {
                                                 return;
                                             }
-                                            entity.setTeam(teams.get(p2.getTeamname()));
+                                            entity.setTeam(teams1.get(team1));
 
                                             if(!playersmap.containsKey(entity.getId())) {
                                                 playerEntitiestobesaved.add(entity);
@@ -518,7 +521,7 @@ public class HttpCaller {
                                                 return;
                                             }
 
-                                                entity.setTeam(teams.get(p2.getTeamname()));
+                                            entity.setTeam(teams1.get(team2));
 
                                             if(!playersmap.containsKey(entity.getId())) {
                                                 playerEntitiestobesaved.add(entity);
