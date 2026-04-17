@@ -423,7 +423,7 @@ public class HttpCaller {
     }
     public void loadSquaddata(Integer matchid) {
         List<MatchInfoEntity> matchInfoEntities =List.of( matchRepo.findById(matchid).get());
-        List<String> playerEntities1 = playerRepo.findAll().stream().map(PlayerEntity::getId).toList();
+        Map<String,PlayerEntity> playersmap = playerRepo.findAll().stream().collect(Collectors.toMap(x->x.getId(),x->x,(a,b)->a));
         List<PlayerEntity> playerEntitiestobesaved = new ArrayList<>();
          Map<String,TeamEntity> teams = teamRepo.findAll().stream().collect(Collectors.toMap(x->x.getTeamSName() , x -> x , (a,b)->a));
         matchInfoEntities.forEach(x->{
@@ -448,45 +448,10 @@ public class HttpCaller {
                     players.getTeam1().getPlayers()
                             .forEach(
                                     p1-> {
-                                        if(!p1.getCategory().equals("playing XI") && !p1.getCategory().equals("substitutes") && !p1.getCategory().equals("bench")) {
-                                            return;
-                                        }
+
 
                                         p1.getPlayer().forEach(p2-> {
-                                            if(!playerEntities1.contains(p2.getId())) {
-                                                PlayerEntity entity = new PlayerEntity(
-                                                        p2.getId(),
-                                                        p2.getName(),
-                                                        p2.getImageId(),
-                                                        p2.getBattingStyle(),
-                                                        p2.getBowlingStyle()
-                           );
-                                                if(p2.getRole().contains("Allrounder")) {
-                                                    entity.setType("ALL ROUNDER");
-                                                } else if (p2.getRole().contains("Bowl")) {
-                                                    entity.setType("BOWLER");
-                                                } else if (p2.getRole().contains("WK")) {
-                                                    entity.setType("WICKET KEEPER");
-                                                }{
-                                                    entity.setType("BATSMEN");
-                                                }
-//                                                entity.setPlayingtype(p1.getCategory());
-                                                entity.setTeam(teams.get(p2.getTeamname()));
-                                                playerEntitiestobesaved.add(entity);
 
-
-                                            }
-                                        });
-                                    }
-                            );
-                    players.getTeam2().getPlayers()
-                            .forEach(
-                                    p1-> {
-                                        if(!p1.getCategory().equals("playing XI") && !p1.getCategory().equals("substitutes") && !p1.getCategory().equals("bench")) {
-                                            return;
-                                        }
-                                        p1.getPlayer().forEach(p2-> {
-                                            if(!playerEntities1.contains(p2.getId())) {
                                                 PlayerEntity entity = new PlayerEntity(
                                                         p2.getId(),
                                                         p2.getName(),
@@ -494,21 +459,76 @@ public class HttpCaller {
                                                         p2.getBattingStyle(),
                                                         p2.getBowlingStyle()
                                                 );
-                                                if(p2.getRole().contains("Allrounder")) {
-                                                    entity.setType("ALL ROUNDER");
-                                                } else if (p2.getRole().contains("Bowl")) {
-                                                    entity.setType("BOWLER");
-                                                } else if (p2.getRole().contains("WK")) {
-                                                    entity.setType("WICKET KEEPER");
-                                                }{
-                                                    entity.setType("BATSMEN");
-                                                }
+
+                                            if(p2.getRole().toLowerCase().contains("round")) {
+                                                entity.setType("ALL ROUNDER");
+                                            } else if (p2.getRole().toLowerCase().contains("bowl")) {
+                                                entity.setType("BOWLER");
+                                            } else if (p2.getRole().toLowerCase().contains("wk")) {
+                                                entity.setType("WICKET KEEPER");
+                                            }else if (p2.getRole().toLowerCase().contains("bat")) {
+                                                entity.setType("BATSMEN");
+                                            } else {
+                                                return;
+                                            }
+                                            entity.setTeam(teams.get(p2.getTeamname()));
+
+                                            if(!playersmap.containsKey(entity.getId())) {
+                                                playerEntitiestobesaved.add(entity);
+                                            }else {
+                                             PlayerEntity playerEntity = playersmap.get(entity.getId());
+                                              if(!playerEntity.getType().equalsIgnoreCase(entity.getType())) {
+                                                  playerEntity.setType(entity.getType());
+                                                  playerEntitiestobesaved.add(playerEntity);
+                                              }
+                                            }
+
+
+
+                                        });
+                                    }
+                            );
+                    players.getTeam2().getPlayers()
+                            .forEach(
+                                    p1-> {
+
+                                        p1.getPlayer().forEach(p2-> {
+
+                                                PlayerEntity entity = new PlayerEntity(
+                                                        p2.getId(),
+                                                        p2.getName(),
+                                                        p2.getImageId(),
+                                                        p2.getBattingStyle(),
+                                                        p2.getBowlingStyle()
+                                                );
+
+                                            if(p2.getRole().toLowerCase().contains("round")) {
+                                                entity.setType("ALL ROUNDER");
+                                            } else if (p2.getRole().toLowerCase().contains("bowl")) {
+                                                entity.setType("BOWLER");
+                                            } else if (p2.getRole().toLowerCase().contains("wk")) {
+                                                entity.setType("WICKET KEEPER");
+                                            }else if (p2.getRole().toLowerCase().contains("bat")) {
+                                                entity.setType("BATSMEN");
+                                            }else {
+                                                return;
+                                            }
 
                                                 entity.setTeam(teams.get(p2.getTeamname()));
                                                 playerEntitiestobesaved.add(entity);
 
-
+                                            if(!playersmap.containsKey(entity.getId())) {
+                                                playerEntitiestobesaved.add(entity);
+                                            }else {
+                                                PlayerEntity playerEntity = playersmap.get(entity.getId());
+                                                if(!playerEntity.getType().equalsIgnoreCase(entity.getType())) {
+                                                    playerEntity.setType(entity.getType());
+                                                    playerEntitiestobesaved.add(playerEntity);
+                                                }
                                             }
+
+
+
                                         });
                                     }
                             );

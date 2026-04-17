@@ -72,7 +72,7 @@ public class MatchesService {
         List<String> strings = List.of("Completed");
       return matchrepo.fetchmatchescompletedorlive(strings);
     }
-    public SmartTeam getbestplayers(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap){
+    public SmartTeam getbestplayers(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap , Integer matchid){
         if(pointdtos.size() == 0 ){
             return null;
         }
@@ -109,8 +109,17 @@ public class MatchesService {
             });
             Map<Integer, List<PlayerEntity>> e = new HashMap<>();
             Map<String, Integer> e1 = new HashMap<>();
+            MatchState matchState = matchStaterepo.getstate(matchid);
+            if(matchState!=null && matchState.getIsannounced() ) {
+                playerEntities = playerEntities.stream().filter(x->{
+                    String category = x.getCategory();
+                    if(category!=null) {
+                        return !category.equalsIgnoreCase("bench");
 
-
+                    }
+                    return false;
+                }).collect(Collectors.toList());
+            }
             List<PlayerEntity> selected = new ArrayList<>();
             playerEntities.forEach(x -> {
                 if (selected.size() == 11) {
@@ -182,7 +191,7 @@ public class MatchesService {
 
                 matchSelection.setDreamTeam(teamCompletableFuture.get());
                 matchSelection.setPlayers(playerfuture.get());
-                matchSelection.setSmartTeam(getbestplayers(pt.get(),matchSelection.getPlayers()));
+                matchSelection.setSmartTeam(getbestplayers(pt.get(),matchSelection.getPlayers(),id));
 
                 matchSelection.setIsannounced(match.get().getIsannounced());
 

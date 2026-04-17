@@ -1,15 +1,15 @@
 package com.security.demo.service;
 
 import com.security.demo.DBmodel.MatchInfoEntity;
+import com.security.demo.DBmodel.MatchState;
+import com.security.demo.model.Matchinfo;
+import com.security.demo.repo.MatchStaterepo;
 import com.security.demo.repo.Matchrepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -22,9 +22,12 @@ public class MatchLoader {
 
     @Autowired
     LoadGameService gameService;
+    @Autowired
+    MatchesService matchesService;
 
     private static List<CompletableFuture> list = new ArrayList<>();
     private static Map<Integer,String> map = new HashMap<>();
+    private static List<Integer> matchs = new ArrayList<>();
     public void  runmatch(){
 
         LoadGameService.sleep(5);
@@ -34,9 +37,11 @@ public class MatchLoader {
             Long start = (x.getStartDate() - System.currentTimeMillis()   )/1000 ;
             if( x.getState().equals("Upcoming") &&  start <=1800 && !map.containsKey(x.getMatchId())) {
                 map.put(x.getMatchId(),"Starting");
+                matchs.add(x.getMatchId());
                 return true;
             } else if (x.getState().equals("Live") && !map.containsKey(x.getMatchId()) ) {
                 map.put(x.getMatchId(),"Live");
+                matchs.add(x.getMatchId());
                 return true;
             }
             return false;
@@ -92,6 +97,30 @@ public class MatchLoader {
            }
 
        }
+       matchs = new ArrayList<>();
+    }
+    @Autowired
+    MatchStaterepo matchStaterepo;
+
+
+    public void loadSquads(){
+        if(matchs.size() > 0 ){
+            matchs.forEach(id->{
+               MatchState matchState =  matchStaterepo.getstate(id);
+               if(matchState != null ) {
+                   Optional<MatchInfoEntity> en = matchrepo.findById(id);
+                   if(en.isPresent() && en.get().getStatus().equals("Upcoming")) {
+                       System.out.println("fetching new squad data");
+                       Boolean stat = matchesService.saveplayers(id, true);
+                       if(stat) {
+                           matchState.setIsannounced(true);
+                           matchStaterepo.save(matchState);
+                       }
+                   }
+               }
+            });
+        }
+
     }
 
 }

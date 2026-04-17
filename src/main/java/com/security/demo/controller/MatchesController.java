@@ -7,6 +7,7 @@ import com.security.demo.config.User;
 import com.security.demo.model.Match;
 import com.security.demo.model.MatchSelection;
 import com.security.demo.model.Player;
+import com.security.demo.service.HttpCaller;
 import com.security.demo.service.MatchesService;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ import java.util.List;
 public class MatchesController {
     @Autowired
     MatchesService matchesService;
+
+    @Autowired
+    HttpCaller caller;
 
     @GetMapping("/fetch")
     public List<Match> fetchMatches(){
@@ -37,5 +41,10 @@ public class MatchesController {
     public boolean fetchplayers( @AuthenticationPrincipal User user){
         return matchesService.syncdata();
 
+    }
+    @GetMapping("/syncp/{matchid}")
+    public boolean fetchplayers( @AuthenticationPrincipal User user , @PathVariable("matchid") Integer matchid){
+         caller.loadSquaddata(matchid);
+         return true;
     }
 }

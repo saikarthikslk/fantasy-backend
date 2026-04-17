@@ -1,6 +1,7 @@
 package com.security.demo;
 
 import com.security.demo.controller.NotificationController;
+import com.security.demo.repo.TeamRepo;
 import com.security.demo.service.HttpCaller;
 import com.security.demo.service.LoadGameService;
 import com.security.demo.service.MatchLoader;
@@ -35,18 +36,18 @@ public class DemoApplication {
 	MatchLoader matchLoader;
 
 	private static List<CompletableFuture> futures = new ArrayList<>();
-//
-//
-//	@Scheduled(fixedRate = 18000000)
-//	public void run() throws IOException, InterruptedException {
-////		httpCaller.fetchsavematches();
-////		httpCaller.loadTeamData();
-////		httpCaller.loadSquaddata();
-//
-//
-//	}
-//
-//	//fetch daily matches
+
+
+	@Scheduled(fixedRate = 18000000)
+	public void run() throws IOException, InterruptedException {
+//		httpCaller.fetchsavematches();
+//		httpCaller.loadTeamData();
+//		httpCaller.loadSquaddata();
+
+
+	}
+
+	//fetch daily matches
 	@Scheduled(fixedRate = 86400000)
 	public void run1() throws IOException, InterruptedException {
 		httpCaller.fetchsavematches();
@@ -64,6 +65,12 @@ public class DemoApplication {
 	public void rungame() throws IOException, InterruptedException {
 		matchLoader.runmatch();
 	}
+
+	@Scheduled(fixedRate = 90000)
+	public void loadsquads() throws IOException, InterruptedException {
+		matchLoader.loadSquads();
+	}
+
 //
 //	@Autowired
 //	NotificationController notificationController;
