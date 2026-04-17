@@ -369,6 +369,10 @@ public class HttpCaller {
 
 
     }
+    public void loadteams(Integer matchid){
+        MatchInfoEntity matchInfoEntity = matchRepo.findById(matchid).get();
+        loadTeamData(List.of(matchInfoEntity.getTeam1(),matchInfoEntity.getTeam2()));
+    }
     public void loadTeamData(List<TeamEntity> teamEntities) {
         List<PlayerEntity> playerEntities = new ArrayList<>();
         teamEntities.forEach(x->{
@@ -515,7 +519,6 @@ public class HttpCaller {
                                             }
 
                                                 entity.setTeam(teams.get(p2.getTeamname()));
-                                                playerEntitiestobesaved.add(entity);
 
                                             if(!playersmap.containsKey(entity.getId())) {
                                                 playerEntitiestobesaved.add(entity);

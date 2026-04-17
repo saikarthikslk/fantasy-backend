@@ -7,6 +7,7 @@ import com.security.demo.config.User;
 import com.security.demo.model.Match;
 import com.security.demo.model.MatchSelection;
 import com.security.demo.model.Player;
+import com.security.demo.repo.TeamRepo;
 import com.security.demo.service.HttpCaller;
 import com.security.demo.service.MatchesService;
 import org.antlr.v4.runtime.misc.Pair;
@@ -42,8 +43,10 @@ public class MatchesController {
         return matchesService.syncdata();
 
     }
+
     @GetMapping("/syncp/{matchid}")
     public boolean fetchplayers( @AuthenticationPrincipal User user , @PathVariable("matchid") Integer matchid){
+        caller.loadteams(matchid);
          caller.loadSquaddata(matchid);
          return true;
     }
