@@ -136,6 +136,7 @@ public class LoadGameService {
                    entity.setCreated_at(Timestamp.from(Instant.now()));
                    entity.setTeam(team[0]);
                    entity.setEmail(u.getEmail());
+                   entity.setIsauto(true);
                    tobesaved.add(entity);
                });
                customTeamrepo.saveAll(tobesaved);

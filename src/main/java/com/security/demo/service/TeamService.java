@@ -4,13 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.security.demo.DBmodel.CustomTeamEntity;
+import com.security.demo.DBmodel.MatchInfoEntity;
 import com.security.demo.DBmodel.PlayerEntity;
 import com.security.demo.DBmodel.PlayerPoints;
-import com.security.demo.model.DreamTeam;
-import com.security.demo.model.MatchSelection;
-import com.security.demo.model.Playerchosen;
-import com.security.demo.model.TeamPoints;
+import com.security.demo.model.*;
 import com.security.demo.repo.CustomTeamrepo;
+import com.security.demo.repo.Matchrepo;
 import com.security.demo.repo.PlayerPointsrepo;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +32,16 @@ public class TeamService {
     private MatchesService matchesService;
     @Autowired
     PlayerPointsrepo playerPointsrepo;
+    @Autowired
+    Matchrepo matchrepo;
     public boolean createTeam(DreamTeam dreamTeam, String email) throws JsonProcessingException {
+        Optional<MatchInfoEntity> entity= matchrepo.findById(dreamTeam.getMatchid());
+        if(entity.isEmpty()) {
+            return false ;
+        }
+        if(!entity.get().getStatus().equals("Upcoming")) {
+            return false;
+        }
         customTeamrepo.deleteifexistsbym(email,dreamTeam.getMatchid());
         CustomTeamEntity customTeam = new CustomTeamEntity();
         customTeam.setEmail(email);
@@ -43,6 +52,7 @@ public class TeamService {
         return true;
     }
     public TeamPoints fetchteam(Integer matchid , Integer dreamid) throws JsonProcessingException {
+
         CustomTeamEntity customTeam = customTeamrepo.findById(dreamid).get();
         MatchSelection matchSelection =  matchesService.fetchPlayers(matchid,customTeam.getEmail());
         CustomTeamEntity dreamTeam = matchSelection.getDreamTeam();

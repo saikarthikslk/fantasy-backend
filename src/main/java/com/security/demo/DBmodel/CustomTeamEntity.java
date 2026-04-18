@@ -21,6 +21,7 @@ public class CustomTeamEntity {
     private String team;
     private Integer match_id;
     private Timestamp created_at;
+    private Boolean isauto = false;
 
 
 }
