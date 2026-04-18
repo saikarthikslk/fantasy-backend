@@ -94,6 +94,9 @@ public class TeamService {
             playerchosens.add(p);
         }
         teamPoints.setTotalpoints(points);
+        if(customTeam.getIsauto()) {
+            teamPoints.setIsauto(true);
+        }
         return teamPoints;
     }
 

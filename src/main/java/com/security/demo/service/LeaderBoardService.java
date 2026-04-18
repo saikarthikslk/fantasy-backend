@@ -65,6 +65,9 @@ public class LeaderBoardService {
             points.setVcaptain(team.get("viceCaptainPlayerId").toString());
             List<Object> players = (List<Object>) team.get("properties");
             Double totalpoints=  0.0;
+            if(c1.getIsauto()) {
+                points.setIsauto(true);
+            }
             List<Playerchosen> playerchosens = new ArrayList<>();
             for (Object overall : players) {
                 Map<String,Object> player = (Map<String, Object>) overall;

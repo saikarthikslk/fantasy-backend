@@ -21,4 +21,5 @@ public class TeamPoints {
     private String email;
     private Integer position;
     private byte[] imageurl;
+    private boolean isauto= false;
 }
