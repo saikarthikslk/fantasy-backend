@@ -39,7 +39,7 @@ public class TeamService {
         if(entity.isEmpty()) {
             return false ;
         }
-        if(!entity.get().getStatus().equals("Upcoming")) {
+        if(!entity.get().getState().equals("Upcoming")) {
             return false;
         }
         customTeamrepo.deleteifexistsbym(email,dreamTeam.getMatchid());
