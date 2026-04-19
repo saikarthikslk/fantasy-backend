@@ -4,6 +4,7 @@ package com.security.demo.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.security.demo.DBmodel.*;
+import com.security.demo.config.WhatsAppSender;
 import com.security.demo.controller.NotificationController;
 import com.security.demo.model.MatchSelection;
 import com.security.demo.model.Matchinfo;
@@ -47,6 +48,8 @@ public class LoadGameService {
     private Userrepo userrepo;
     @Autowired
     LeaderBoardService leaderBoardService;
+    @Autowired
+    WhatsAppSender sender;
     public static List<Integer> stoppedmatches = new ArrayList();
     private static      JaroWinklerSimilarity jw = new JaroWinklerSimilarity();
 
@@ -146,6 +149,10 @@ public class LoadGameService {
 
 
     }
+    public void sendmessage (Integer mathcid){
+        userrepo.getnums().forEach (x-> sender.sendTemplateMessage("91"+x,mathcid)
+        );
+    }
     public void pullscorecard(Integer matchid) throws IOException, InterruptedException {
 
 
@@ -218,11 +225,14 @@ public class LoadGameService {
         System.out.println("Checking for Squad Data");
         while (true) {
             if(matchesService.saveplayers(matchid, true)){
+                sendmessage(matchid);
+
                 break;
             };
             sleep(10);
         }
         System.out.println("Announced   Squad Data");
+
 
         matchState.setIsannounced(true);
         matchInfoEntity.setIsannounced(true);

@@ -23,6 +23,7 @@ public class User {
     private Boolean autoteam;
 
     private byte[] profielpic;
+    private String num;
 
 
     @OneToMany(fetch = FetchType.LAZY)
