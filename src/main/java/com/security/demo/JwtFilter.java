@@ -63,9 +63,16 @@ public class JwtFilter extends OncePerRequestFilter {
     private static ObjectMapper objectMapper = new ObjectMapper();
     public String buildbody(HttpServletRequest request) throws IOException {
         Tracking tracking = new Tracking();
+        String ip = request.getHeader("X-Forwarded-For");
+
+        if (ip != null && !ip.isEmpty()) {
+            ip = ip.split(",")[0]; // first IP = real client
+        } else {
+            ip = request.getRemoteAddr();
+        }
+
+        tracking.setAddr(ip);
         tracking.setPath(request.getRequestURI());
-        tracking.setAddr(request.getRemoteAddr());
-        tracking.setHost(request.getRemoteHost());
         if(!tracking.getPath().contains("/api/user")){
             InputStream is = request.getInputStream();
             String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);

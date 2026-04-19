@@ -10,7 +10,6 @@ import lombok.Setter;
 @Data
 public class Tracking {
 
-    private String host;
     private String addr;
     private String path;
     private String body;
