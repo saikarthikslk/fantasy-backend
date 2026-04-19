@@ -105,6 +105,9 @@ public class LeaderBoardService {
                 points.setDid(c1.getId());
 
             }
+            if(points.isIsauto()) {
+                totalpoints = totalpoints * 0.9;
+            }
             points.setTotalpoints(totalpoints);
             points.setImageurl(user.getProfielpic());
             teamPoints.add(points);

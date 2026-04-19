@@ -18,6 +18,7 @@ public class Userdetailsservice implements UserDetailsService {
         if(user == null) {
             throw new UsernameNotFoundException("email not found for the " + username );
         }
+
        return   new User(username , "","");
     }
 }

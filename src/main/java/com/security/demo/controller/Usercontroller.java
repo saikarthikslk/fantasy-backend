@@ -17,9 +17,17 @@ public class Usercontroller {
 
     @Autowired
     UserService userService;
-    @GetMapping("/profile")
-    public User getuser(@AuthenticationPrincipal com.security.demo.config.User user){
-        return userService.fetchuser(user.getUsername());
+    @GetMapping({"/profile/{id}", "/profile"})
+    public User getuser(@AuthenticationPrincipal com.security.demo.config.User user,@PathVariable(value = "id" ,required = false) Integer acitivty){
+        if(acitivty == null) {
+            User user1=  userService.fetchuser(user.getUsername());
+            user1.setLogs(null);
+            return user1;
+        }else {
+            User user1 =  userService.fetchuser(user.getUsername());
+            return user1;
+        }
+
 
     }
     @PostMapping("/upload")
