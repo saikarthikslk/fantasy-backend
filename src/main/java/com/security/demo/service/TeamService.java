@@ -42,7 +42,7 @@ public class TeamService {
 //        if(!entity.get().getState().equals("Upcoming")) {
 //            return false;
 //        }
-        customTeamrepo.deleteifexisggitsbym(email,dreamTeam.getMatchid());
+        customTeamrepo.deleteifexistsbym(email,dreamTeam.getMatchid());
         CustomTeamEntity customTeam = new CustomTeamEntity();
         customTeam.setEmail(email);
         customTeam.setCreated_at(Timestamp.from(Instant.now()));
