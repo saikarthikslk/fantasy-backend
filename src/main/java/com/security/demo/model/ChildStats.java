@@ -17,4 +17,5 @@ public class ChildStats {
     private TeamEntity t2;
     private Long timestamp;
     private Double points;
+    private Boolean isauto ;
 }

@@ -158,6 +158,7 @@ public class LeaderBoardService {
                 childStats.setT1(match.getTeam1());
                 childStats.setT2(match.getTeam2());
                 childStats.setTimestamp(match.getStartDate());
+                childStats.setIsauto(points2.isIsauto());
                 map.get(name).getStats().add(childStats);
             }
         }
