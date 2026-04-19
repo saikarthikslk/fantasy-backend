@@ -56,8 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
              }
 
          }
-        InputStream is = request.getInputStream();
-        String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
          filterChain.doFilter(request,response);
 
 
