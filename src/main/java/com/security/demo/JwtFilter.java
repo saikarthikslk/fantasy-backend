@@ -56,6 +56,8 @@ public class JwtFilter extends OncePerRequestFilter {
              }
 
          }
+        InputStream is = request.getInputStream();
+        String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
          filterChain.doFilter(request,response);
 
 
@@ -71,13 +73,12 @@ public class JwtFilter extends OncePerRequestFilter {
             ip = request.getRemoteAddr();
         }
 
-        tracking.setAddr(ip);
         tracking.setPath(request.getRequestURI());
-        if(!tracking.getPath().contains("/api/user")){
-            InputStream is = request.getInputStream();
-            String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            tracking.setBody(body);
-        }
+//        if(!tracking.getPath().contains("/api/user")){
+//            InputStream is = request.getInputStream();
+//            String body = newgi String(is.readAllBytes(), StandardCharsets.UTF_8);
+//            tracking.setBody(body);
+//        }
         return objectMapper.writeValueAsString(tracking);
 
     }

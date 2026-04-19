@@ -35,13 +35,13 @@ public class TeamService {
     @Autowired
     Matchrepo matchrepo;
     public boolean createTeam(DreamTeam dreamTeam, String email) throws JsonProcessingException {
-//        Optional<MatchInfoEntity> entity= matchrepo.findById(dreamTeam.getMatchid());
-//        if(entity.isEmpty()) {
-//            return false ;
-//        }
-//        if(!entity.get().getState().equals("Upcoming")) {
-//            return false;
-//        }
+        Optional<MatchInfoEntity> entity= matchrepo.findById(dreamTeam.getMatchid());
+        if(entity.isEmpty()) {
+            return false ;
+        }
+        if(!entity.get().getState().equals("Upcoming")) {
+            return false;
+        }
         customTeamrepo.deleteifexistsbym(email,dreamTeam.getMatchid());
         CustomTeamEntity customTeam = new CustomTeamEntity();
         customTeam.setEmail(email);
