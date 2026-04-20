@@ -13,7 +13,7 @@ public class WhatsAppSender {
 
     // 🔐 Replace these with your actual credentials
     public static final String ACCOUNT_SID = "AC318f0bf0ac507e62fe43ade7bc1a0274";
-    public static final String AUTH_TOKEN = "23591c955315025fcc52269e99f688f5";
+    public static final String AUTH_TOKEN = "c076e5fd78ca6befb57d94e4c14e26bc";
     private static final String FROM        = "whatsapp:+14155238886";
     public WhatsAppSender(){
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
@@ -50,10 +50,10 @@ public class WhatsAppSender {
         return variables;
     }
     // Template message
-    public  void sendTemplateMessage(String toNumber , Integer matchid) {
+    public  void sendTemplateMessage(String t1 , Integer matchid) {
         try {
             Message message = Message.creator(
-                            new PhoneNumber("whatsapp:+" + toNumber),
+                            new PhoneNumber("whatsapp:+" + t1),
                             new PhoneNumber(FROM)
                     ,"IPL 2026"
 

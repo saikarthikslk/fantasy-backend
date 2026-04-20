@@ -4,6 +4,7 @@ package com.security.demo.controller;
 import com.security.demo.DBmodel.MatchInfoEntity;
 import com.security.demo.DBmodel.PlayerEntity;
 import com.security.demo.config.User;
+import com.security.demo.config.WhatsAppSender;
 import com.security.demo.model.Match;
 import com.security.demo.model.MatchSelection;
 import com.security.demo.model.Player;
@@ -49,5 +50,12 @@ public class MatchesController {
         caller.loadteams(matchid);
          caller.loadSquaddata(matchid);
          return true;
+    }
+    @Autowired
+    WhatsAppSender sender;
+    @GetMapping("/send/{matchid}/{phn}")
+    public boolean sendmess( @AuthenticationPrincipal User user , @PathVariable("matchid") Integer matchid , @PathVariable("phn") String phn){
+        sender.sendTemplateMessage(phn,matchid);
+        return true;
     }
 }
