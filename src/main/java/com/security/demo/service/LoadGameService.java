@@ -150,12 +150,12 @@ public class LoadGameService {
 
     }
     public void sendmessage (Integer mathcid){
-        userrepo.getnums().forEach (x-> sender.sendTemplateMessage("91"+x,mathcid)
-        );
+//        userrepo.getnums().forEach (x-> sender.sendTemplateMessage("91"+x,mathcid)
+//        );
     }
     public void pullscorecard(Integer matchid) throws IOException, InterruptedException {
 
-
+        MatchesService.matches = new ArrayList<>();
         MatchSelection matchSelection = matchesService.fetchPlayers(matchid, "");
         System.out.println("Running Match " + matchid );
         MatchState matchState = matchStaterepo.getstate(matchid);
@@ -164,6 +164,7 @@ public class LoadGameService {
             matchState.setMatchid(matchid);
             matchState.setTimestamp(System.currentTimeMillis());
             matchStaterepo.save(matchState);
+            MatchesService.matches = new ArrayList<>();
         }
         MatchInfoEntity matchInfoEntity = matchrepo.findById(matchid).get();
         matchesService.saveplayers(matchid, true);
@@ -210,7 +211,7 @@ public class LoadGameService {
                                 matchState.setMatchstatus(status);
                                 matchrepo.save(matchInfoEntity);
                                 matchStaterepo.save(matchState);
-
+                                MatchesService.matches = new ArrayList<>();
                                 return;
                             }
                         }
@@ -220,12 +221,13 @@ public class LoadGameService {
 
             }
         }
+        MatchesService.matches = new ArrayList<>();
         notificationController.sendEvent("refresh",matchid);
         matchStaterepo.save(matchState);
         System.out.println("Checking for Squad Data");
         while (true) {
             if(matchesService.saveplayers(matchid, true)){
-                sendmessage(matchid);
+//                sendmessage(matchid);
 
                 break;
             };
@@ -251,7 +253,7 @@ public class LoadGameService {
             }
             sleep(30);
         }
-
+        MatchesService.matches = new ArrayList<>();
 
 
 
@@ -611,6 +613,7 @@ public class LoadGameService {
                             autoteam = false;
                         }
                         matchrepo.save(matchInfoEntity);
+                        MatchesService.matches = new ArrayList<>();
                     }
                 } else  {
                     matchState.setInnings1(mapper.writeValueAsString(r1));
@@ -687,6 +690,7 @@ public class LoadGameService {
             }
         }
         System.out.println("Match completed");
+        MatchesService.matches = new ArrayList<>();
         LeaderBoardService.points = new ArrayList<>();
         matchesService.saveplayers(matchid,false);
 

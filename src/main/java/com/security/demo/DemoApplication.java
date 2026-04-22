@@ -50,7 +50,9 @@ public class DemoApplication {
 	//fetch daily matches
 	@Scheduled(fixedRate = 86400000)
 	public void run1() throws IOException, InterruptedException {
+
 		httpCaller.fetchsavematches();
+		MatchesService.matches = new ArrayList<>();
 
 	}
 //	//run every 30mins

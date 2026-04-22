@@ -42,9 +42,12 @@ public class MatchesService {
     public static  List<String> list = List.of("bench","substitutes","playing XI");
 
 
-
+    public static  List<Match> matches = new ArrayList<>();
 
     public List<Match> fetchMatches(){
+        if(matches.size() >0 ){
+            return  matches;
+        }
         List<Match> matches =  matchrepo.findAll().stream().map(this::toMatchInfo).toList();
         matches.forEach(m ->{
             if(m.getState().equals("Completed")) {
@@ -66,6 +69,7 @@ public class MatchesService {
 
             }
         });
+        MatchesService.matches = matches;
         return matches;
     }
     public List<MatchInfoEntity> fetchliveorcompleted(){
@@ -286,6 +290,7 @@ public class MatchesService {
 
         return info;
     }
+
 
     public boolean syncdata(){
         this.fetchliveorcompleted().forEach(x->{
