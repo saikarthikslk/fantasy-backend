@@ -16,4 +16,5 @@ public class MatchSelection {
     private CustomTeamEntity dreamTeam;
     private SmartTeam smartTeam;
     private boolean isannounced = false;
+    private Integer views = 0;
 }

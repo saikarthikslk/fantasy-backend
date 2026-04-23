@@ -35,7 +35,8 @@ public class MatchesService {
     LeaderBoardService service;
     @Autowired
     MatchStaterepo matchStaterepo;
-
+    @Autowired
+    ActivityRepo repo ;
 
 
 
@@ -179,6 +180,7 @@ public class MatchesService {
 
 
     }
+
     public MatchSelection fetchPlayers(Integer id, String email){
         Optional<MatchInfoEntity> match = matchrepo.findById(id);
         MatchSelection matchSelection = new MatchSelection();
@@ -199,7 +201,7 @@ public class MatchesService {
                 matchSelection.setSmartTeam(getbestplayers(pt.get(),matchSelection.getPlayers(),id));
 
                 matchSelection.setIsannounced(match.get().getIsannounced());
-
+                matchSelection.setViews(repo.getviewcount(id));
 
 
             }catch (Exception e) {
@@ -207,6 +209,7 @@ public class MatchesService {
             }
 
         }
+
         return matchSelection;
     }
     public boolean saveplayers(Integer id ,Boolean islive){
