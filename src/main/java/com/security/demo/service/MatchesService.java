@@ -144,8 +144,7 @@ public class MatchesService {
                         e.get(team).add(x);
 
                     } else {
-
-                        int typeleft = 4 - e.size();
+                        int typeleft = 4 - e1.size();
                         if (typeleft == 0) {
                             e1.put(x.getType(), 1);
                             selected.add(x);
