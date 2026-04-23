@@ -150,16 +150,18 @@ public class MatchesService {
                             selected.add(x);
                             e.get(team).add(x);
                         } else {
-                            if (typeleft == 11 - selected.size() && !e1.containsKey(x.getType())) {
+                            if(typeleft < 11 - selected.size()) {
                                 selected.add(x);
                                 e1.put(x.getType(), 1);
                                 e.get(team).add(x);
-                            } else {
-                                selected.add(x);
-                                e1.put(x.getType(), 1);
-                                e.get(team).add(x);
-                            }
+                            }else {
+                                if(!e1.containsKey(x.getType())){
+                                    selected.add(x);
+                                    e1.put(x.getType(), 1);
+                                    e.get(team).add(x);
+                                }
 
+                            }
                         }
                     }
 
