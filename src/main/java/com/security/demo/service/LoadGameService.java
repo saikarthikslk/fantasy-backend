@@ -6,9 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.security.demo.DBmodel.*;
 import com.security.demo.config.WhatsAppSender;
 import com.security.demo.controller.NotificationController;
-import com.security.demo.model.MatchSelection;
-import com.security.demo.model.Matchinfo;
-import com.security.demo.model.SmartTeam;
+import com.security.demo.model.*;
 import com.security.demo.repo.*;
 import org.apache.commons.text.CaseUtils;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
@@ -17,6 +15,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
@@ -79,6 +79,8 @@ public class LoadGameService {
     }
     @Autowired
     NotificationController notificationController;
+    @Autowired
+    PlayerRepo playerRepo;
 
     public static void  sleep(Integer sec) {
         try {
@@ -104,15 +106,17 @@ public class LoadGameService {
             default:              return label; // fallback
         }
     }
-    public String autoload(Integer matchid) throws JsonProcessingException {
+    public String autoload(Integer matchid,MatchInfoEntity matchInfoEntity) throws JsonProcessingException {
 
         String team []= {""};
        List<CustomTeamEntity> entities = customTeamrepo.findbymatchid(matchid);
        Map<String,CustomTeamEntity> customTeamEntityMap = entities.stream().collect(Collectors.toMap(CustomTeamEntity::getEmail, x->x,(x, y)->x));
        List<User> users = userrepo.findAll();
        List<User> usersWhoNeedTeam = users.stream().filter(x->!customTeamEntityMap.containsKey(x.getEmail())).toList();
+       List<User> userwhohaveteam = users.stream().filter(x->customTeamEntityMap.containsKey(x.getEmail())).toList();
+       MatchSelection matchSelection = matchesService.fetchPlayers(matchid,"");
        if(usersWhoNeedTeam .size()  >0 ) {
-           SmartTeam smartTeam = matchesService.fetchPlayers(matchid,"").getSmartTeam();
+           SmartTeam smartTeam = matchSelection.getSmartTeam();
            if(smartTeam != null) {
                Map<String,Object> map = new HashMap<>();
                map.put("matchid", matchid);
@@ -145,6 +149,100 @@ public class LoadGameService {
                customTeamrepo.saveAll(tobesaved);
            }
     }
+       if(userwhohaveteam.size() > 0 ){
+           List<Integer> ids1 = new ArrayList<>();
+           ids1.add(matchInfoEntity.getTeam1().getTeamId());
+           ids1.add(matchInfoEntity.getTeam2().getTeamId());
+           CompletableFuture<List<PlayerEntity>> playerfuture = CompletableFuture.supplyAsync(()->playerRepo.getPlayers(ids1));
+           CompletableFuture<List<Pointdto>> pt = CompletableFuture.supplyAsync(() -> playerPointsrepo.getpoints(matchid));
+
+
+           CompletableFuture<?> all = CompletableFuture.allOf(playerfuture ,pt);
+           all.join();
+           List<CustomTeamEntity > tobesaved = new ArrayList<>();
+
+           userwhohaveteam.stream().forEach(x->{
+               CustomTeamEntity teamEntity = customTeamEntityMap.get(x.getEmail());
+
+
+               List<PlayerEntity> playerEntities = matchSelection.getPlayers();
+               List<PlayerEntity> playingOrSub = playerEntities.stream().filter(x1-> !Objects.equals(x1.getCategory(), "bench")).collect(Collectors.toList());
+               Map<String , PlayerEntity> pmap = playingOrSub.stream().collect(Collectors.toMap(PlayerEntity::getId, z->z,(z1, z3)->z1));
+               List<String> ids=  playingOrSub.stream().map(x2->x2.getId()).collect(Collectors.toList());
+               List<PlayerEntity> selected = new ArrayList<>();
+               if(teamEntity!=null){
+                   try {
+                       Map<String,Object>  map = mapper.readValue(teamEntity.getTeam(),Map.class);
+                       List<Map<String,Object>> players = (List<Map<String, Object>>) map.get("properties");
+                       String cap = map.get("captainPlayerId").toString();
+                       String vcap=  map.get("viceCaptainPlayerId").toString();
+                       List<String> p1 = new ArrayList<>();
+                       players.forEach(y->{
+                           Map<String,Object > playerdetails = y ;
+                           String id = playerdetails.get("playerid").toString();
+                           if(pmap.containsKey(id)){
+                               selected.add(pmap.get(id));
+                           }
+
+                           if(!ids.contains(id)){
+                              p1.add(id);
+                           }
+
+                       });
+                       if(p1.size() > 0 ){
+                          List<PlayerEntity> finalteam = matchesService.getbestreplacements(pt.get(),playerfuture.get(),matchid,selected);
+                          List<PlayerEntity> replaced = finalteam.stream().filter(x1->!selected.contains(x1)).collect(Collectors.toList());
+                          List<String> rids = replaced.stream().map(x4->x4.getId()).collect(Collectors.toList());
+                          Map<String,String> rp = new HashMap<>();
+                          for (int i =0; i < rids.size() ; i++) {
+                              rp.put(p1.get(i),rids.get(i));
+                          }
+                          Map<String,Object> fmap = new HashMap<>();
+                           fmap.put("matchid", matchid);
+                           List<Map<String,Object>> maps = new ArrayList<>();
+                           finalteam.forEach(x3->{
+                               Map<String,Object> pp = new HashMap<>();
+
+                               pp.put("playerid", x.getId());
+
+                               pp.put("type",mapPlayerType(x3.getType()));
+                               maps.add(pp);
+                           });
+                           fmap.put("properties",maps);
+                           fmap.put("replacement" ,mapper.writeValueAsString(rp));
+                           boolean iscap = false;
+                           if(!ids.contains(cap)) {
+                               if(replaced.size() > 0) {
+                                cap=   replaced.get(0).getId();
+                                iscap = true;
+                               }
+                           }
+                           if(!ids.contains(vcap)){
+                               if(iscap ){
+                                   if(replaced.size() > 1) {
+                                       vcap = replaced.get(1).getId();
+                                   }
+                               }else {
+                                   vcap = replaced.get(0).getId();
+                               }
+                           }
+                           fmap.put("captainPlayerId",cap);
+                           fmap.put("viceCaptainPlayerId",vcap);
+                           teamEntity.setTeam(mapper.writeValueAsString(fmap));
+                           teamEntity.setCreated_at(Timestamp.from(Instant.now()));
+                           tobesaved.add(teamEntity);
+
+                       }
+
+                   }catch (Exception e ){
+                       System.out.println(e.getMessage());
+                   }
+
+
+               }
+           });
+           customTeamrepo.saveAll(tobesaved);
+       }
        return team[0];
 
 
@@ -609,7 +707,7 @@ public class LoadGameService {
                     if(!iscompleted  && !Objects.equals(matchInfoEntity.getState(), "Live")) {
                         matchInfoEntity.setState("Live");
                         if(autoteam) {
-                            autoload(matchid);
+                            autoload(matchid,matchInfoEntity);
                             autoteam = false;
                         }
                         matchrepo.save(matchInfoEntity);

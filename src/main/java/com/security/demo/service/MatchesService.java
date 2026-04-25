@@ -42,7 +42,15 @@ public class MatchesService {
 
     public static  List<String> list = List.of("bench","substitutes","playing XI");
 
-
+    public Boolean validate(List<String> keys ){
+        boolean[] isvalid = {true} ;
+        list.forEach(x->{
+            if(!keys.contains(x)) {
+                isvalid[0]=false;
+            }
+        });
+        return  isvalid[0];
+    }
     public static  List<Match> matches = new ArrayList<>();
 
     public List<Match> fetchMatches(){
@@ -180,6 +188,113 @@ public class MatchesService {
 
 
     }
+    public List<PlayerEntity> getbestreplacements(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap , Integer matchid , List<PlayerEntity> picked){
+        if(pointdtos.size() == 0 ){
+            return null;
+        }
+        try {
+
+            SmartTeam smartTeam = new SmartTeam();
+            smartTeam.setPlayers(new ArrayList<>());
+            Map<String, Double> pt1 = pointdtos.stream().collect(Collectors.toMap(Pointdto::getPlayerid, Pointdto::getPoints, (a, b) -> a));
+            List<PlayerEntity> playerEntities = playerEntityMap.stream().filter(x -> pt1.containsKey(x.getId())).collect(Collectors.toList());
+            playerEntities.forEach(x -> {
+                if (pt1.containsKey(x.getId())) {
+                    x.setTotalpoints(pt1.get(x.getId()));
+                }
+            });
+            playerEntities.sort((a, b) -> {
+                Double p1 = 0.0;
+                Double p2 = 0.0;
+                if (pt1.containsKey(a.getId())) {
+                    p1 = pt1.get(a.getId());
+                }
+
+                if (pt1.containsKey(b.getId())) {
+                    p2 = pt1.get(b.getId());
+                }
+
+                if (p1 > p2) {
+                    return -1;
+                } else if (p1.equals(p2)) {
+                    return 0;
+
+                } else {
+                    return 1;
+                }
+            });
+            Map<Integer, List<PlayerEntity>> e = new HashMap<>();
+            Map<String, Integer> e1 = new HashMap<>();
+            MatchState matchState = matchStaterepo.getstate(matchid);
+            if(matchState!=null && matchState.getIsannounced() ) {
+                playerEntities = playerEntities.stream().filter(x->{
+                    String category = x.getCategory();
+                    if(category!=null) {
+                        return !category.equalsIgnoreCase("bench");
+
+                    }
+                    return false;
+                }).collect(Collectors.toList());
+            }
+            List<PlayerEntity > selected = new ArrayList<>(picked);
+            selected.forEach(x->{
+                if(!e.containsKey(x.getTeam().getTeamId())) {
+                    e.put(x.getTeam().getTeamId(),new ArrayList<>());
+                }
+                e.get(x.getTeam().getTeamId()).add(x);
+                e1.put(x.getType(),1);
+            });
+
+            playerEntities.forEach(x -> {
+                if (selected.size() == 11) {
+                    return;
+                }
+                int team = x.getTeam().getTeamId();
+                if (!e.containsKey(team)) {
+                    e.put(team, new ArrayList<>());
+                }
+
+                if (e.get(team).size() <= 7) {
+
+                    if (selected.size() <= 8) {
+                        e1.put(x.getType(), 1);
+                        selected.add(x);
+                        e.get(team).add(x);
+
+                    } else {
+                        int typeleft = 4 - e1.size();
+                        if (typeleft == 0) {
+                            e1.put(x.getType(), 1);
+                            selected.add(x);
+                            e.get(team).add(x);
+                        } else {
+                            if(typeleft < 11 - selected.size()) {
+                                selected.add(x);
+                                e1.put(x.getType(), 1);
+                                e.get(team).add(x);
+                            }else {
+                                if(!e1.containsKey(x.getType())){
+                                    selected.add(x);
+                                    e1.put(x.getType(), 1);
+                                    e.get(team).add(x);
+                                }
+
+                            }
+                        }
+                    }
+
+                }
+            });
+            return selected;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage() );
+        }
+        return null;
+
+
+
+    }
 
     public MatchSelection fetchPlayers(Integer id, String email){
         Optional<MatchInfoEntity> match = matchrepo.findById(id);
@@ -230,7 +345,7 @@ public class MatchesService {
                 CompletableFuture<?> all = CompletableFuture.allOf(playerfuture, squads);
                 all.join();
                 Map<String ,List<String>> sq1 = squads.get();
-                if(sq1.size() > 2 ){
+                if(sq1.size() > 2  && validate(sq1.keySet().stream().toList()) ){
                     List<PlayerEntity> playerEntities = playerfuture.get();
                     playerEntities.forEach(x -> {
                         for (String  key  : sq1.keySet())  {
