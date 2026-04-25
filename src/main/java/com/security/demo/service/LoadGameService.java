@@ -203,7 +203,7 @@ public class LoadGameService {
                            finalteam.forEach(x3->{
                                Map<String,Object> pp = new HashMap<>();
 
-                               pp.put("playerid", x.getId());
+                               pp.put("playerid", x3.getId());
 
                                pp.put("type",mapPlayerType(x3.getType()));
                                maps.add(pp);
