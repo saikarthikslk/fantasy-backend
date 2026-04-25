@@ -244,7 +244,8 @@ public class MatchesService {
                 e.get(x.getTeam().getTeamId()).add(x);
                 e1.put(x.getType(),1);
             });
-
+            List<String> ids= selected.stream().map(x->x.getId()).collect(Collectors.toList());
+            playerEntities = playerEntities.stream().filter(x->!ids.contains(x.getId())).collect(Collectors.toList());
             playerEntities.forEach(x -> {
                 if (selected.size() == 11) {
                     return;
