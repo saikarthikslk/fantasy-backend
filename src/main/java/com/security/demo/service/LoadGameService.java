@@ -112,6 +112,7 @@ public class LoadGameService {
        List<CustomTeamEntity> entities = customTeamrepo.findbymatchid(matchid);
        Map<String,CustomTeamEntity> customTeamEntityMap = entities.stream().collect(Collectors.toMap(CustomTeamEntity::getEmail, x->x,(x, y)->x));
        List<User> users = userrepo.findAll();
+       users = users.stream().filter(User::getIsactive).collect(Collectors.toList());
        List<User> usersWhoNeedTeam = users.stream().filter(x->!customTeamEntityMap.containsKey(x.getEmail())).toList();
        List<User> userwhohaveteam = users.stream().filter(x->customTeamEntityMap.containsKey(x.getEmail())).toList();
        MatchSelection matchSelection = matchesService.fetchPlayers(matchid,"");

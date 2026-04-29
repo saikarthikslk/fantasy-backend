@@ -53,7 +53,9 @@ public class UserService {
         if(data.getType()!= null) {
             user.setReplacementtype(data.getType());
         }
-
+        if(data.getActive()!=null) {
+            user.setIsactive(data.getActive());
+        }
         return userrepo.save(user);
     }
 }
