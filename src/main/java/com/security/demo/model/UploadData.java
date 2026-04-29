@@ -18,4 +18,5 @@ public class UploadData
 
     private Boolean autoteam;
     private String type;
+    private Boolean active;
 }
