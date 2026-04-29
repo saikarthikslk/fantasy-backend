@@ -6,6 +6,9 @@ import com.security.demo.model.Matchinfo;
 import com.security.demo.repo.MatchStaterepo;
 import com.security.demo.repo.Matchrepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,7 +30,7 @@ public class MatchLoader {
 
     private static List<CompletableFuture> list = new ArrayList<>();
     private static Map<Integer,String> map = new HashMap<>();
-    private static List<Integer> matchs = new ArrayList<>();
+    public static List<Integer> matchs = new ArrayList<>();
     public void  runmatch(){
 
         LoadGameService.sleep(5);
@@ -101,7 +104,14 @@ public class MatchLoader {
     }
     @Autowired
     MatchStaterepo matchStaterepo;
-
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(10); // 👈 multiple threads
+        scheduler.setThreadNamePrefix("scheduler-");
+        scheduler.initialize();
+        return scheduler;
+    }
 
     public void loadSquads(){
         if(matchs.size() > 0 ){
@@ -122,5 +132,7 @@ public class MatchLoader {
         }
 
     }
+
+
 
 }

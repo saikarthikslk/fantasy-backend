@@ -85,6 +85,9 @@ public class MatchesService {
         List<String> strings = List.of("Completed");
       return matchrepo.fetchmatchescompletedorlive(strings);
     }
+    public int updatepoints(){
+       return playerPointsrepo.updatepoints();
+    }
     public SmartTeam getbestplayers(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap , Integer matchid){
         if(pointdtos.size() == 0 ){
             return null;
@@ -188,12 +191,98 @@ public class MatchesService {
 
 
     }
+    public Map<String,String> checkForRoleReplacements(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap , Integer matchid , List<String> picked,List<String> replacementids){
+
+        Map<String,String> replacemeap = new HashMap<>();
+        Map<String, Double> pt1 = pointdtos.stream().collect(Collectors.toMap(Pointdto::getPlayerid, Pointdto::getPoints, (a, b) -> a));
+        List<PlayerEntity> playerEntities = playerEntityMap.stream().filter(x -> pt1.containsKey(x.getId())).collect(Collectors.toList());
+        playerEntities.forEach(x -> {
+            if (pt1.containsKey(x.getId())) {
+                x.setTotalpoints(pt1.get(x.getId()));
+            }
+        });
+        Map<String,PlayerEntity> map = playerEntities.stream().collect(Collectors.toMap(x->x.getId(),x->x,(a,b)->a));
+        MatchState matchState = matchStaterepo.getstate(matchid);
+        if(matchState!=null && matchState.getIsannounced()) {
+            playerEntities = playerEntities.stream().filter(x -> {
+                String category = x.getCategory();
+                if (category != null) {
+                    return !category.equalsIgnoreCase("bench");
+
+                }
+                return false;
+            }).collect(Collectors.toList());
+        }
+
+        Map<String,List<PlayerEntity>> rolebasedmap = new HashMap<>();
+        playerEntities = playerEntities.stream().filter(x->!picked.contains(x.getId())).collect(Collectors.toList());
+        playerEntities.sort((a, b) -> {
+            Double p1 = 0.0;
+            Double p2 = 0.0;
+            if (pt1.containsKey(a.getId())) {
+                p1 = pt1.get(a.getId());
+            }
+
+            if (pt1.containsKey(b.getId())) {
+                p2 = pt1.get(b.getId());
+            }
+
+            if (p1 > p2) {
+                return -1;
+            } else if (p1.equals(p2)) {
+                return 0;
+
+            } else {
+                return 1;
+            }
+        });
+        playerEntities.forEach(x->{
+            if(!rolebasedmap.containsKey(x.getType())){
+                rolebasedmap.put(x.getType(),new ArrayList<>());
+            }
+            rolebasedmap.get(x.getType()).add(x);
+        });
+
+        Map<Integer,Integer> teamcount = new HashMap<>();
+        picked.forEach(x->{
+            if(replacementids.contains(x)) {
+                return;
+            }
+            PlayerEntity playerEntity = map.get(x);
+            Integer id = playerEntity.getTeam().getTeamId();
+            if(!teamcount.containsKey(id)){
+                teamcount.put(id,0);
+            }
+            teamcount.put(id,teamcount.get(id)+1);
+        });
+        List<String> selected = new ArrayList<>();
+        replacementids.forEach(x3->{
+            PlayerEntity playerEntity = map.get(x3);
+            if(playerEntity == null) {
+                return;
+            }
+            if(rolebasedmap.containsKey(playerEntity.getType())) {
+                List<PlayerEntity> playerEntities1 = rolebasedmap.get(playerEntity.getType());
+               for (PlayerEntity entity : playerEntities1) {
+                   Integer id = entity.getTeam().getTeamId();
+                   if(!selected.contains(entity.getId()) && teamcount.get(id)+1<8){
+                       replacemeap.put(x3,entity.getId());
+                       selected.add(entity.getId()) ;
+                       teamcount.put(id,teamcount.get(id)+1);
+                       break;
+                   }
+               }
+            }
+
+        });
+        return replacemeap;
+
+    }
     public List<PlayerEntity> getbestreplacements(List<Pointdto> pointdtos , List<PlayerEntity> playerEntityMap , Integer matchid , List<PlayerEntity> picked){
         if(pointdtos.size() == 0 ){
             return null;
         }
         try {
-
             SmartTeam smartTeam = new SmartTeam();
             smartTeam.setPlayers(new ArrayList<>());
             Map<String, Double> pt1 = pointdtos.stream().collect(Collectors.toMap(Pointdto::getPlayerid, Pointdto::getPoints, (a, b) -> a));
@@ -226,10 +315,10 @@ public class MatchesService {
             Map<Integer, List<PlayerEntity>> e = new HashMap<>();
             Map<String, Integer> e1 = new HashMap<>();
             MatchState matchState = matchStaterepo.getstate(matchid);
-            if(matchState!=null && matchState.getIsannounced() ) {
-                playerEntities = playerEntities.stream().filter(x->{
+            if(matchState!=null && matchState.getIsannounced()) {
+                playerEntities = playerEntities.stream().filter(x -> {
                     String category = x.getCategory();
-                    if(category!=null) {
+                    if (category != null) {
                         return !category.equalsIgnoreCase("bench");
 
                     }
@@ -413,6 +502,7 @@ public class MatchesService {
 
 
     public boolean syncdata(){
+        this.playerPointsrepo.updatepoints();
         this.fetchliveorcompleted().forEach(x->{
             this.saveplayers(x.getMatchId(),false);
         });

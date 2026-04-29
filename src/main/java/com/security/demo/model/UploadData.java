@@ -17,4 +17,5 @@ public class UploadData
     private byte[] image;
 
     private Boolean autoteam;
+    private String type;
 }

@@ -50,6 +50,9 @@ public class UserService {
                     data.getAutoteam()
             );
         }
+        if(data.getType()!= null) {
+            user.setReplacementtype(data.getType());
+        }
 
         return userrepo.save(user);
     }

@@ -34,7 +34,7 @@ public class PlayerEntity implements Serializable {
     @Column(name = "type")
     private String type;
 
-    private Integer points;
+    private Double points;
 
     private String category;
     private String prevcategory;

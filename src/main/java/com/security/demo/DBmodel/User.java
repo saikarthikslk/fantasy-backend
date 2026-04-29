@@ -24,7 +24,7 @@ public class User {
 
     private byte[] profielpic;
     private String num;
-
+    private String replacementtype = "score";
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "email",referencedColumnName = "email")

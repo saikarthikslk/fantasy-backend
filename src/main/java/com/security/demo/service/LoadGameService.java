@@ -190,13 +190,29 @@ public class LoadGameService {
 
                        });
                        if(p1.size() > 0 ){
+                           Map<String,String> replace = new HashMap<>();
+                           if(!x.getReplacementtype().equals("score")) {
+                             replace=  matchesService.checkForRoleReplacements(pt.get(),playerfuture.get(),matchid,selected.stream().map(PlayerEntity::getId).collect(Collectors.toList()), p1);
+                           }
+                           List<String> typereplaced = replace.keySet().stream().toList();
+
+                           List<String> p2= p1.stream().filter(x3->!typereplaced.contains(x3)).collect(Collectors.toList());
+                           replace.forEach((a,b)->{
+                               selected.add(pmap.get(b));
+                           });
+
                           List<PlayerEntity> finalteam = matchesService.getbestreplacements(pt.get(),playerfuture.get(),matchid,selected);
                           List<PlayerEntity> replaced = finalteam.stream().filter(x1->!selected.contains(x1)).collect(Collectors.toList());
                           List<String> rids = replaced.stream().map(x4->x4.getId()).collect(Collectors.toList());
                           Map<String,String> rp = new HashMap<>();
                           for (int i =0; i < rids.size() ; i++) {
-                              rp.put(p1.get(i),rids.get(i));
+                              rp.put(p2.get(i),rids.get(i));
                           }
+
+                          replace.forEach((a,b)->{
+                              rp.put(a,b);
+
+                          });
                           Map<String,Object> fmap = new HashMap<>();
                            fmap.put("matchid", matchid);
                            List<Map<String,Object>> maps = new ArrayList<>();
@@ -210,21 +226,11 @@ public class LoadGameService {
                            });
                            fmap.put("properties",maps);
                            fmap.put("replacement" ,mapper.writeValueAsString(rp));
-                           boolean iscap = false;
-                           if(!ids.contains(cap)) {
-                               if(replaced.size() > 0) {
-                                cap=   replaced.get(0).getId();
-                                iscap = true;
-                               }
+                           if(rp.containsKey(cap)) {
+                               cap = rp.get(cap);
                            }
-                           if(!ids.contains(vcap)){
-                               if(iscap ){
-                                   if(replaced.size() > 1) {
-                                       vcap = replaced.get(1).getId();
-                                   }
-                               }else {
-                                   vcap = replaced.get(0).getId();
-                               }
+                           if(rp.containsKey(vcap)) {
+                               vcap = rp.get(vcap);
                            }
                            fmap.put("captainPlayerId",cap);
                            fmap.put("viceCaptainPlayerId",vcap);
@@ -791,6 +797,7 @@ public class LoadGameService {
         MatchesService.matches = new ArrayList<>();
         LeaderBoardService.points = new ArrayList<>();
         matchesService.saveplayers(matchid,false);
+        playerPointsrepo.updatepoints();
 
 
     }
