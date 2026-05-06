@@ -386,10 +386,23 @@ public class MatchesService {
 
     }
 
+    public Map<String,List<Playerstat>> fetchstats(List<PlayerEntity> players){
+        List<Playerstat>  playerstats= playerPointsrepo.getPoints(players.stream().map(PlayerEntity::getId).collect(Collectors.toList()));
+        Map<String,List<Playerstat>> stats = new HashMap<>();
+        playerstats.forEach(x->{
+            if(!stats.containsKey(x.getPlayerid())) {
+                stats.put(x.getPlayerid(),new ArrayList<>());
+
+            }
+            stats.get(x.getPlayerid()).add(x);
+        });
+        return stats;
+    }
+
     public MatchSelection fetchPlayers(Integer id, String email){
         Optional<MatchInfoEntity> match = matchrepo.findById(id);
         MatchSelection matchSelection = new MatchSelection();
-       matchSelection.setPlayers(new ArrayList<>());
+        matchSelection.setPlayers(new ArrayList<>());
         if(match.isPresent()) {
             List<Integer> ids = new ArrayList<>();
             ids.add(match.get().getTeam1().getTeamId());
@@ -407,6 +420,7 @@ public class MatchesService {
 
                 matchSelection.setIsannounced(match.get().getIsannounced());
                 matchSelection.setViews(repo.getviewcount(id));
+                matchSelection.setStats(fetchstats(playerfuture.get()));
 
 
             }catch (Exception e) {
