@@ -36,14 +36,14 @@ public interface PlayerPointsrepo extends JpaRepository<PlayerPoints,Integer> {
     List<Pointdto> getpoints(@Param("mid") Integer id) ;
 
     @Query(value =
-            "SELECT team1, team2, ballsbowled, playerid, score, ballplayed, wickets, eco, scoregiven ,pos " +
+            "SELECT team1, team2, ballsbowled, playerid, totalpoints as score, ballplayed, wickets, eco, scoregiven ,pos " +
                     "FROM ( " +
                     "    SELECT " +
                     "        ROW_NUMBER() OVER (PARTITION BY p.playerid ORDER BY m.start_date DESC) AS pos, " +
                     "        p.playerid, " +
                     "        t1.team_s_name AS team1, " +
                     "        t2.team_s_name AS team2, " +
-                    "        p.score, " +
+                    "        p.totalpoints, " +
                     "        p.ballplayed, " +
                     "        p.wickets, " +
                     "        p.ballsbowled, " +

@@ -16,7 +16,7 @@ public class Playerstat {
     private String team2;
     private Integer ballsbowled;
     private String playerid;
-    private Integer score;
+    private Double score;
     private Integer ballplayed;
     private Integer wickets;
     private double eco;
