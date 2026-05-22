@@ -68,7 +68,7 @@ public class DemoApplication {
 		matchLoader.runmatch();
 	}
 
-	@Scheduled(fixedRate = 30000)
+	@Scheduled(fixedRate = 90000)
 	public void loadsquads() throws IOException, InterruptedException {
 		matchLoader.loadSquads();
 	}
