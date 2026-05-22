@@ -733,6 +733,7 @@ public class LoadGameService {
                        iscompleted = true;
                        matchInfoEntity.setState("Completed");
                        matchrepo.save(matchInfoEntity);
+                       matchStaterepo.save(matchState);
                    }
                 }
                 matchState.setTimestamp(System.currentTimeMillis());

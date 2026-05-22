@@ -1,5 +1,7 @@
 package com.security.demo.controller;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -35,6 +38,18 @@ public class PictureController {
                 .header("Content-Type", "image/jpg")
                 .header("Access-Control-Allow-Origin", "*")  // allows Flutter web to access
                 .body(response.body());
+
+    }
+    @GetMapping("/rules")
+    public ResponseEntity<byte[]> getfile() throws IOException, InterruptedException {
+        ClassPathResource resource =
+                new ClassPathResource("pointsRulebook.md");
+        InputStream inputStream = resource.getInputStream();
+        byte [] bytes = inputStream.readAllBytes();
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/markdown")
+                .header("Access-Control-Allow-Origin", "*")  // allows Flutter web to access
+                .body(bytes);
 
     }
 }
