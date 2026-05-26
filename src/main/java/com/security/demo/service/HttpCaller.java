@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class HttpCaller {
 
 
-    public static String  API_KEY="QTnGbSZd7gRJ3lrDOmEVhgL9Wbq4PyRVZzptBo7LzDWZ2LEGiX";
+    public static String  API_KEY="rrtueYl8btuhcwO0UxN4rrbK8vpyB5z0sGD9vIVU8pDiqLOXHa";
 //    QTnGbSZd7gRJ3lrDOmEVhgL9Wbq4PyRVZzptBo7LzDWZ2LEGiX
 //    rrtueYl8btuhcwO0UxN4rrbK8vpyB5z0sGD9vIVU8pDiqLOXHa
     public static String  API_HOST="Cricbuzz-Official-Cricket-API.allthingsdev.co";
@@ -76,7 +76,10 @@ public class HttpCaller {
               root.getMatchDetails().forEach( x -> {
                   x.getMatchDetailsMap().getMatch().forEach( y -> {
                       Match info =  y.getMatchInfo();
-                      if(matchids.contains(info.getMatchId()) &&  venuids.contains(info.getVenueInfo().getId()) ){
+                      if(matchids.contains(info.getMatchId()) &&  venuids.contains(info.getVenueInfo().getId())  ){
+                          return;
+                      }
+                      if(info.getTeam1().getTeamSName().equals("TBC") || info.getTeam2().getTeamSName().equals("TBC") ){
                           return;
                       }
                       TeamEntity team1 = new TeamEntity(
